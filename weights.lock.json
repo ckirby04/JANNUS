@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "pipeline_revision": "7base-stackerv2-r1",
+  "_comment": "SHA-256 manifest for every checkpoint the production pipeline loads. `jannus doctor` and `jannus fetch-weights` verify against this, and `jannus predict` records the hash of each checkpoint it actually loaded in provenance.json. That pairing is what lets a coordinating site prove every participating site ran identical weights. No `url` field is set: weights are distributed under separate terms, not from this repository. See docs/INSTALL.md.",
+  "weights": [
+    {
+      "name": "nnunet_3d",
+      "path": "nnUNet/nnUNet_results/Dataset001_BrainMets/nnUNetTrainer_expanded2917__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+      "sha256": "d62bce3831778262a841079e74a0c24cb2915154f205379d347fee0b8fbc581d",
+      "bytes": 246757967,
+      "role": "base",
+      "notes": "nnU-Net 3D full-res, fold 0. Source file lives at nnUNetTrainer__nnUNetPlans__3d_fullres/fold_0_expanded_2917."
+    },
+    {
+      "name": "nnunet_2d",
+      "path": "nnUNet/nnUNet_results/Dataset001_BrainMets/nnUNetTrainer_500ep__nnUNetPlans__2d/fold_0/checkpoint_final.pth",
+      "sha256": "c54d77ec78add2102cf79204775c0247d44b20506e6fecb975532fe1b11b5f9d",
+      "bytes": 165241295,
+      "role": "base",
+      "notes": "nnU-Net 2D, 500-epoch trainer, fold 0 only."
+    },
+    {
+      "name": "patch_8",
+      "path": "model/patch_8.pth",
+      "sha256": "0c33c2e0da26ed81a1cc53630193a1a63084cc741ce9fd72d0737805067d3228",
+      "bytes": 26557306,
+      "role": "base",
+      "notes": "LightweightUNet3D, patch size 8."
+    },
+    {
+      "name": "patch_12",
+      "path": "model/patch_12.pth",
+      "sha256": "54fc0aa850e6cadffea335f969dc8c87fd2b7133f712be160e38ce428c52aa37",
+      "bytes": 26557789,
+      "role": "base",
+      "notes": "LightweightUNet3D, patch size 12."
+    },
+    {
+      "name": "patch_24",
+      "path": "model/patch_24.pth",
+      "sha256": "f64dd6ba7811d775f2ddaba135dc7b78a17e84822a7fe630736fb5827d2378e2",
+      "bytes": 26557789,
+      "role": "base",
+      "notes": "LightweightUNet3D, patch size 24."
+    },
+    {
+      "name": "patch_36",
+      "path": "model/patch_36.pth",
+      "sha256": "853cd69193980a06eca391554af2ff606329339b5c3479c6f412aabf4683adb1",
+      "bytes": 26557789,
+      "role": "base",
+      "notes": "LightweightUNet3D, patch size 36."
+    },
+    {
+      "name": "swin_unetr",
+      "path": "model/swin_unetr_brainmets.pth",
+      "sha256": "c88036a2b62dbf855a1ef992368578ac687889578fe403e0161c34173b91c063",
+      "bytes": 256367202,
+      "role": "base",
+      "notes": "SwinUNETR 150ep+, 96^3 ROI, feature_size 48."
+    },
+    {
+      "name": "stacker",
+      "path": "model/stacking_classifier_production.pth",
+      "sha256": "8416674cc3b216b1edf27c4244393ee59deebf8c0c9d2498f56c4469b73f9da2",
+      "bytes": 5483913,
+      "role": "stacker",
+      "notes": "StackingClassifierV2, ~1.36M params. THE production meta-learner."
+    }
+  ]
+}

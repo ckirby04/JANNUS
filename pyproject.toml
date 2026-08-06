@@ -1,0 +1,172 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jannus"
+description = "Brain metastasis segmentation on multi-sequence MRI, packaged for multi-site external validation"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Clark Kirby", email = "crkirby@uark.edu" }]
+keywords = ["medical-imaging", "segmentation", "brain-metastases", "MRI", "deep-learning"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+dynamic = ["version"]
+
+# Core stays deliberately small: config, validation, reporting and the CLI.
+# A site can install jannus, run `jannus validate-data` against its cohort and
+# review the code, before pulling in a multi-gigabyte deep-learning stack.
+dependencies = [
+    "numpy>=1.24,<3.0",
+    "scipy>=1.10,<2.0",
+    "pyyaml>=6.0,<7.0",
+    "nibabel>=5.0,<6.0",
+]
+
+[project.optional-dependencies]
+# Everything needed to actually run inference.
+segmentation = [
+    "torch>=2.1,<3.0",
+    "torchvision>=0.16,<1.0",
+    "monai>=1.3,<2.0",
+    "SimpleITK>=2.3,<3.0",
+    "scikit-image>=0.21,<1.0",
+    "scikit-learn>=1.3,<2.0",
+    "tqdm>=4.65,<5.0",
+]
+# nnU-Net supplies 2 of the 7 base models. Split out because it pins its own
+# torch range and is the most common install failure at a new site.
+nnunet = ["nnunetv2>=2.2,<3.0"]
+
+# FastAPI service. Not required for validation work.
+api = [
+    "fastapi>=0.104,<1.0",
+    "uvicorn>=0.24,<1.0",
+    "python-multipart>=0.0.6",
+    "pydicom>=2.4,<4.0",
+    "highdicom>=0.22,<1.0",
+    "reportlab>=4.0,<5.0",
+]
+
+# Literature retrieval. Pulls in LLM clients and a vector database: review
+# carefully before installing inside a hospital network, and see
+# docs/PHI_AND_DEIDENTIFICATION.md — report generation can transmit case
+# context to a third-party API.
+rag = [
+    "langchain>=0.1,<1.0",
+    "langchain-community>=0.0.20",
+    "langchain-text-splitters>=0.0.1",
+    "chromadb>=0.4,<2.0",
+    "sentence-transformers>=2.2,<6.0",
+    "open_clip_torch>=2.23,<4.0",
+    "transformers>=4.35,<6.0",
+    "rank-bm25>=0.2.2",
+    "biopython>=1.83",
+    "xmltodict>=0.13",
+]
+
+demo = ["gradio>=4.0,<6.0", "matplotlib>=3.7,<4.0", "plotly>=5.17,<7.0"]
+
+dev = [
+    "pytest>=7.4,<9.0",
+    "pytest-cov>=4.1,<7.0",
+    "ruff>=0.6,<1.0",
+    "mypy>=1.8,<2.0",
+    "types-PyYAML",
+    "httpx>=0.25,<1.0",
+    "build>=1.0",
+]
+
+# Convenience target for a full research install.
+all = ["jannus[segmentation,nnunet,api,rag,demo]"]
+
+[project.urls]
+Homepage = "https://github.com/ckirby04/JANNUS"
+Repository = "https://github.com/ckirby04/JANNUS"
+Issues = "https://github.com/ckirby04/JANNUS/issues"
+
+[project.scripts]
+jannus = "jannus.cli.main:_entry"
+
+[tool.setuptools.dynamic]
+version = { attr = "jannus._version.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["jannus*"]
+
+# Ship the config with the wheel. In v1.40 `configs/` was not package data, so
+# a pip-installed copy had no models.yaml and the pipeline could not be built.
+[tool.setuptools.package-data]
+jannus = ["py.typed", "configs/*.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# No -x: fail-fast hides all but the first failure, which is the wrong default
+# for a suite a remote site runs and reports back to us.
+addopts = "-v --tb=short --strict-markers"
+markers = [
+    "slow: takes more than ~10s (deselect with -m 'not slow')",
+    "gpu: requires a CUDA device",
+    "weights: requires real model checkpoints on disk",
+    "network: requires outbound network access",
+]
+
+[tool.coverage.run]
+source = ["jannus"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["scripts/", "demo/", "notebooks/"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "B", "UP", "C4", "SIM", "RUF"]
+ignore = [
+    "E501",    # line length is handled by the formatter
+    "B008",    # FastAPI's Depends() in defaults is idiomatic
+    "SIM108",  # ternaries are not always clearer
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011", "E402", "B007"]
+
+# Modules migrated wholesale from v1.40. Correctness rules (F-series, B904,
+# B006) still apply everywhere; these are the stylistic rules that would
+# otherwise require churning ~70 lines of working research code as part of the
+# packaging release. New code under core/, data/, cli/ and evaluation/ is held
+# to the full rule set.
+"src/jannus/segmentation/*" = ["RUF013", "RUF059", "B905", "RUF005", "RUF012", "SIM118", "C401"]
+"src/jannus/rag/*" = ["RUF013", "RUF059", "B905", "E402", "SIM118", "SIM105", "SIM112"]
+"src/jannus/api/*" = ["RUF013", "RUF059", "B905", "SIM118", "SIM102", "SIM103", "C416"]
+
+[tool.mypy]
+python_version = "3.10"
+packages = ["jannus"]
+ignore_missing_imports = true
+warn_unused_configs = true
+# The migrated research modules are not yet annotated; new code in core/, data/
+# cli/ and evaluation/ is checked strictly via the override below.
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = ["jannus.core.*", "jannus.data.*", "jannus.cli.*"]
+disallow_untyped_defs = true

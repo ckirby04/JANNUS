@@ -1,0 +1,152 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JANNUS_LOG_SALT: ci-fixed-salt
+
+jobs:
+  lint:
+    name: Lint and type-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - name: ruff
+        run: ruff check src/ tests/
+      - name: mypy
+        run: mypy
+        # The migrated research modules are not yet annotated; the strict
+        # override in pyproject covers core/, data/ and cli/, which is where
+        # new code goes. Not blocking until the back-catalogue is annotated.
+        continue-on-error: true
+
+  test:
+    name: Tests (py${{ matrix.python }} / ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Windows is included deliberately: it is the primary development
+        # platform, and several v1.40 path defects were platform-specific and
+        # went unnoticed because CI ran only ubuntu.
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.10", "3.11", "3.12"]
+        exclude:
+          - os: windows-latest
+            python: "3.10"
+          - os: windows-latest
+            python: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - name: Install (core + dev only)
+        # Deliberately excludes torch: the unit suite must pass without a
+        # 2.5 GB CUDA wheel, which keeps CI fast and proves the dependency
+        # split actually holds.
+        run: pip install -e ".[dev]"
+      - name: Run tests
+        # No -x. Fail-fast surfaces one failure per run, which is the wrong
+        # default for a suite external sites also run and report back to us.
+        run: pytest -m "not slow and not gpu and not weights and not network" --cov=jannus --cov-report=xml --cov-report=term
+      - name: Upload coverage
+        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.xml
+
+  slow-tests:
+    name: Slow tests
+    runs-on: ubuntu-latest
+    # These build full SwinUNETR models on CPU and take minutes each. Run on
+    # main and on demand, not on every pull request.
+    if: github.event_name != 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e ".[dev,segmentation]"
+      - run: pytest -m "slow and not gpu and not weights"
+
+  build:
+    name: Build and verify wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install build twine
+      - run: python -m build
+      - run: twine check dist/*
+      - name: Install the wheel into a clean venv and exercise the CLI
+        # v1.40 never did this, which is why `configs/` not being package data
+        # and `scripts/` not being installed both went unnoticed.
+        run: |
+          python -m venv /tmp/clean
+          /tmp/clean/bin/pip install dist/*.whl
+          /tmp/clean/bin/jannus --version
+          /tmp/clean/bin/jannus --help
+          /tmp/clean/bin/python -c "import jannus; print(jannus.__version__)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  secrets:
+    name: Secret and PHI scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+      - name: Fail if a .env file is tracked
+        run: |
+          if git ls-files --error-unmatch .env 2>/dev/null; then
+            echo "::error::.env is tracked by git. Remove it and rotate every credential it contained."
+            exit 1
+          fi
+          echo "No tracked .env - OK"
+      - name: Fail if patient imaging or model weights are tracked
+        run: |
+          matches=$(git ls-files | grep -Ei '\.(nii|nii\.gz|dcm|npz|npy|pth|pt|ckpt)$' || true)
+          if [ -n "$matches" ]; then
+            echo "::error::Imaging or model artefacts are tracked by git:"
+            echo "$matches"
+            exit 1
+          fi
+          echo "No tracked imaging or weights - OK"
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pip-audit
+      - run: pip-audit --desc || true

@@ -1,0 +1,76 @@
+# =============================================================================
+# AUGMENTATION PIPELINE CONFIGURATION
+# =============================================================================
+# Controls all augmentation modules for brain metastasis segmentation.
+#
+# Usage:
+#   python -m augmentation.pipeline --config configs/augmentation.yaml --offline --n-cases 100
+#   python -m augmentation.pipeline --config configs/augmentation.yaml --dry-run
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# GLOBAL SETTINGS
+# -----------------------------------------------------------------------------
+seed: 42
+output_dir: "nnUNet/nnUNet_raw/Dataset001_BrainMets"
+train_data_dir: "data/train"
+synthetic_ratio: 0.5
+num_workers: 4
+log_level: "INFO"
+
+# -----------------------------------------------------------------------------
+# SCANNER HARMONIZATION (online, per-batch)
+# -----------------------------------------------------------------------------
+# Uses TorchIO transforms. Requires torchio to be installed.
+# Fields map directly to ScannerHarmonization constructor params.
+scanner_harmonization:
+  enabled: true
+  probability: 0.4            # chance of applying to each sample
+  scanner_profile: "random"   # siemens, ge, philips, or random
+  noise_p: 0.5               # Rician noise probability
+  histogram_shift_p: 0.5     # intensity histogram shift probability
+  bias_field_p: 0.4          # B1 bias field probability
+  motion_p: 0.3              # motion artifact probability
+  ghosting_p: 0.3            # ghosting artifact probability
+  anisotropy_p: 0.3          # resolution anisotropy probability
+  gamma_p: 0.4               # gamma correction probability
+
+# -----------------------------------------------------------------------------
+# CONTRAST AUGMENTATION (online, per-batch)
+# -----------------------------------------------------------------------------
+# Fields map directly to ContrastAugmentation constructor params.
+contrast_augmentation:
+  enabled: true
+  probability: 0.5            # chance of applying to each sample
+  p_enhancement_scaling: 0.5  # gadolinium dose variation
+  p_partial_enhancement: 0.4  # heterogeneous enhancement (necrosis)
+  p_washinout: 0.3            # wash-in/wash-out timing variation
+  p_background_noise: 0.4     # leptomeningeal enhancement noise
+
+# -----------------------------------------------------------------------------
+# LESION COPY-PASTE (offline, saved to disk)
+# -----------------------------------------------------------------------------
+lesion_copypaste:
+  enabled: true
+  library_cache_path: "augmentation/lesion_library.pkl"
+  context_margin: 8           # voxels of context around each lesion
+  min_patch: 32               # minimum patch side length (voxels)
+  blend_sigma: 2.0            # Gaussian sigma for soft blending
+  rotation_range: 15.0        # max rotation degrees per axis
+  scale_range: [0.7, 1.3]    # isotropic scaling range
+
+  # --- Healthy brain insertion ---
+  healthy_insertion_enabled: true
+  healthy_brain_dir: "G:/BrainMetShare/Raw Data/Yale-Brain-Mets-Longitudinal"
+
+  # --- Intra-patient copy-paste ---
+  intra_patient_enabled: true
+  intra_max_copies: 3
+
+  # --- Inter-patient copy-paste ---
+  inter_patient_enabled: true
+  inter_max_insertions: 2
+
+  # --- Size-stratified sampling ---
+  small_lesion_threshold_mm3: 100.0
+  small_lesion_oversample: 3

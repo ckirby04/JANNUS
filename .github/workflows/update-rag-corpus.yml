@@ -1,0 +1,88 @@
+# RAG literature corpus refresh.
+#
+# DISABLED ON A SCHEDULE as of v1.50 — manual dispatch only.
+#
+# The v1.40 version of this workflow was broken in three independent ways and
+# had been silently doing nothing:
+#
+#   1. It invoked `scripts/preprocessing/update_corpus.py`, which does not
+#      exist in the repository.
+#   2. It ran `git add outputs/rag/`, but `outputs/` is gitignored, so the add
+#      was a no-op and `git diff --quiet outputs/rag/` always reported "no
+#      changes" — the commit step could never fire.
+#   3. It pushed directly to `main` with no review. For a repository that
+#      external validation sites clone and run against patient data, an
+#      unreviewed automated commit to the default branch is not acceptable.
+#
+# It also installed its dependencies as a separate unpinned `pip install`
+# list, so the corpus could be built against different library versions than
+# the ones the package declares.
+#
+# The corpus is not required for the validation workflow (`validate-data`,
+# `predict`, `evaluate`). It is only used by the optional `jannus[rag]` extra.
+
+name: Update RAG corpus
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "rebuild" to confirm a corpus rebuild'
+        required: true
+        default: ''
+
+jobs:
+  update-corpus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: inputs.confirm == 'rebuild'
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install
+        # Single source of dependency truth, unlike the v1.40 ad-hoc list.
+        run: pip install -e ".[rag]"
+
+      - name: Verify the build script exists
+        # Fail loudly rather than reproducing the v1.40 silent no-op.
+        run: |
+          script=scripts/preprocessing/update_corpus.py
+          if [ ! -f "$script" ]; then
+            echo "::error::$script does not exist. This workflow cannot run until it is implemented."
+            exit 1
+          fi
+
+      - name: Rebuild corpus
+        env:
+          NCBI_EMAIL: ${{ secrets.NCBI_EMAIL }}
+          NCBI_API_KEY: ${{ secrets.NCBI_API_KEY }}
+        run: |
+          python scripts/preprocessing/update_corpus.py \
+            --config configs/rag.yaml \
+            --output_dir outputs/rag
+
+      - name: Open a pull request with the refreshed corpus
+        # A PR, never a direct push to main. Note that `outputs/` is gitignored
+        # by design; if the corpus is ever meant to be tracked, that decision
+        # needs an explicit .gitignore exception and a review of whether the
+        # artefacts can contain case identifiers.
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: chore/rag-corpus-refresh
+          title: "chore: refresh RAG literature corpus"
+          body: |
+            Automated corpus rebuild.
+
+            Review before merging — confirm no case identifiers or PHI have
+            been captured in the generated artefacts.
+          add-paths: |
+            outputs/rag/**

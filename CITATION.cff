@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+title: "JANNUS: brain metastasis segmentation for multi-site external validation"
+message: "If you use JANNUS in your research, please cite it as below."
+type: software
+authors:
+  - given-names: Clark
+    family-names: Kirby
+    email: crkirby@uark.edu
+    affiliation: University of Arkansas
+repository-code: "https://github.com/ckirby04/JANNUS"
+abstract: >-
+  JANNUS segments brain metastases from four co-registered MRI sequences
+  (T1 pre-contrast, T1 post-gadolinium, FLAIR, T2) using a seven-model
+  ensemble fused by a learned stacking meta-classifier. Version 1.50 is
+  packaged for external cross-validation, providing dataset QC, run
+  provenance with checkpoint verification, and reproducible FDA- and
+  RANO-BM-aligned evaluation. Research use only; not a medical device.
+keywords:
+  - medical imaging
+  - brain metastases
+  - segmentation
+  - MRI
+  - deep learning
+  - external validation
+license: MIT
+version: 1.50.0
+date-released: "2026-08-05"

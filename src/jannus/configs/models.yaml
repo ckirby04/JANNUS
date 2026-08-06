@@ -1,0 +1,207 @@
+# Model Registry Configuration
+# Declares which models to load, their architectures, and inference settings.
+#
+# Production architecture (`src/segmentation/pipeline.py::ProductionPipeline`):
+#
+#   Full 4-channel MRI volume
+#     -> 7 base segmentation models, each producing a full-volume probability
+#        map at the input native size:
+#          * nnU-Net 3D       (nnUNetPredictor, native preprocessing)
+#          * nnU-Net 2D       (nnUNetPredictor, native preprocessing)
+#          * patch_8/12/24/36 (LightweightUNet3D; resample to 128^3,
+#                              sliding-window at native ps, upsample back)
+#          * SwinUNETR        (MONAI sliding window, 96^3 ROI)
+#     -> stack into a 9-channel feature cube (7 preds + variance + range)
+#     -> StackingClassifierV2 (~1.36M params), 32^3 sliding window, 0.5 overlap
+#     -> threshold + postprocess -> NIfTI mask
+#
+# Held-out 84-case eval: Dice 0.7858, lesion-wise sens 0.810, FPs/case 1.68.
+# At RANO-BM measurable-disease scope (>=10mm): lesion-wise sens 0.943,
+# matched Dice 0.835. See docs/PRODUCTION.md.
+#
+# nnDetection is no longer part of the inference path. The detection-stage
+# config below is preserved only for the legacy detect-then-segment
+# pipeline retained in deprecated/ for reference.
+
+# NOTE (v1.50): the `ensemble:` and `detection:` sections that stood here in
+# v1.40 have been removed. Neither was read by the production inference path.
+# `ensemble.default_threshold: 0.5` was especially hazardous — it looked like
+# the operating point, sat next to the real (missing) `inference.threshold`,
+# and editing it had no effect whatsoever. The single operating point now lives
+# at `inference.threshold` below.
+#
+# `jannus doctor` reports any config key the inference path does not read, so
+# dead configuration cannot silently reaccumulate here.
+
+# Segmentation ensemble (7 base models)
+models:
+  - name: "nnunet_3d"
+    architecture: "nnunet_3d"       # loaded via nnUNetPredictor adapter
+    # The completed 3D checkpoint lives at fold_0_expanded_2917 under the
+    # standard trainer dir; that folder name is non-standard so nnU-Net's
+    # predictor can't find it. We expose it via a sibling trainer
+    # directory whose fold_0 is a Windows junction pointing at the
+    # real fold_0_expanded_2917 folder, which keeps the in-progress
+    # Phase-5 pseudo-label training under nnUNetTrainer__nnUNetPlans__3d_fullres/fold_0
+    # untouched. See ARCHITECTURE.md > Manual setup.
+    dataset_id: "Dataset001_BrainMets"
+    trainer: "nnUNetTrainer_expanded2917__nnUNetPlans__3d_fullres"
+    folds: [0]
+    checkpoint: "checkpoint_final.pth"
+    threshold: 0.5
+
+  - name: "nnunet_2d"
+    architecture: "nnunet_2d"
+    # Only fold_0 of the 500ep trainer has a checkpoint_final.pth —
+    # folds 1-4 stopped early with checkpoint_latest.pth. Single-fold
+    # inference is the correct thing to do until the remaining folds
+    # finish training; expand this list when they do.
+    dataset_id: "Dataset001_BrainMets"
+    trainer: "nnUNetTrainer_500ep__nnUNetPlans__2d"
+    folds: [0]
+    checkpoint: "checkpoint_final.pth"
+    threshold: 0.5
+
+  # 4 LightweightUNet3D patch variants (v3 — the latest generation; standalone
+  # val Dice 0.84-0.86 — beats the earlier v2 retrain by ~0.06 Dice).
+  # Provenance: copied from 1.30/model/native_v3/v3_{8,12,24,36}patch_best.pth
+  # on 2026-04-25. Trained 500 epochs with SmallLesionLoss (asymmetric Focal
+  # Tversky + Focal + Sensitivity), MONAI augmentation, weighted small-lesion
+  # sampling (`1.30/scripts/training/train_native_v3.py`).
+  # NOTE: v3 weights have deep_supervision=false (no ds_heads in state dict);
+  # earlier v2 weights had deep_supervision=true. Don't flip this back without
+  # checking the strict load.
+  # The cache-build protocol used by the production stacker resampled the
+  # input volume to 128^3 before sliding-window inference at the listed
+  # patch_size, then upsampled the probability map back to the target
+  # spatial size. The LightweightUNet3DAdapter mirrors this exactly.
+  - name: "patch_8"
+    architecture: "lightweight_unet3d"
+    path: "model/patch_8.pth"
+    in_channels: 4
+    out_channels: 1
+    base_channels: 20
+    use_attention: true
+    use_residual: true
+    deep_supervision: false
+    patch_size: 8
+    threshold: 0.5
+
+  - name: "patch_12"
+    architecture: "lightweight_unet3d"
+    path: "model/patch_12.pth"
+    in_channels: 4
+    out_channels: 1
+    base_channels: 20
+    use_attention: true
+    use_residual: true
+    deep_supervision: false
+    patch_size: 12
+    threshold: 0.5
+
+  - name: "patch_24"
+    architecture: "lightweight_unet3d"
+    path: "model/patch_24.pth"
+    in_channels: 4
+    out_channels: 1
+    base_channels: 20
+    use_attention: true
+    use_residual: true
+    deep_supervision: false
+    patch_size: 24
+    threshold: 0.5
+
+  - name: "patch_36"
+    architecture: "lightweight_unet3d"
+    path: "model/patch_36.pth"
+    in_channels: 4
+    out_channels: 1
+    base_channels: 20
+    use_attention: true
+    use_residual: true
+    deep_supervision: false
+    patch_size: 36
+    threshold: 0.5
+
+  - name: "swin_unetr"
+    architecture: "swin_unetr"
+    path: "model/swin_unetr_brainmets.pth"
+    in_channels: 4            # T1, T1ce (t1_gd), T2, FLAIR
+    out_channels: 2           # background, metastasis
+    img_size: [96, 96, 96]
+    feature_size: 48
+    threshold: 0.5
+    # Two-phase fine-tuning schedule (consumed by training scripts).
+    finetune:
+      phase1:                 # encoder frozen
+        epochs: 20
+        lr: 1.0e-4
+        freeze_encoder: true
+      phase2:                 # full fine-tune with encoder LR = decoder / 10
+        epochs: 80
+        lr_decoder: 1.0e-4
+        lr_encoder: 1.0e-5
+        freeze_encoder: false
+    # TODO(manual): download pretrained weights from MONAI model zoo
+    # (swin_unetr_btcv_segmentation.pt) into
+    # model/pretrained/swin_unetr_btcv.pt  — see src/segmentation/swin_unetr_model.py
+    # for the adapter that remaps the 1-channel BTCV stem to our 4-channel input.
+    pretrained: "model/pretrained/swin_unetr_btcv.pt"
+
+# Stacking meta-learner — production StackingClassifierV2 (Dice 0.7858)
+stacking:
+  classifier_path: "model/stacking_classifier_production.pth"
+  in_channels: 9              # 7 predictions + variance + (max - min) range
+  mid_channels: 64
+  n_blocks: 4
+  n_blocks_lowres: 2
+  patch_size: 32
+  overlap: 0.5
+
+# Inference — the operating point.
+inference:
+  # THE OPERATING THRESHOLD. Read by BrainMetPipeline via jannus.core.config.
+  #
+  # v1.50 fix: v1.40 never defined this key, so the pipeline fell through to a
+  # hardcoded 0.5 while every published metric (Dice 0.7858, measurable-disease
+  # sensitivity 0.943) was produced by the evaluation scripts at 0.55. A site
+  # running the documented inference command therefore reproduced neither the
+  # config nor the paper. Changing this value invalidates comparison against
+  # published results — see docs/CHANGELOG.md.
+  threshold: 0.55
+
+  postprocessing:
+    # 2026-04-19: was 15; lowered to 0 to preserve tiny brain-met components
+    # (a sweep showed min_size=20 cost 0.06 Dice on the tiny-lesion bin).
+    # Raising this trades small-lesion recall for fewer false positives, which
+    # is a regulatory decision rather than a tuning knob.
+    min_size: 0
+    opening_size: 1
+    closing_size: 1
+
+# How this site's imaging is named on disk.
+#
+# v1.50 consolidates what were four independent, mutually inconsistent
+# conventions in v1.40 (the CLI defaulted to `bravo`, the API hardcoded `t2`,
+# the demo probed for one then the other, the dataset loader had its own list).
+# There is now exactly one resolver, and it lives here.
+data:
+  # Canonical channel order fed to the models. Do not reorder: the stacker was
+  # trained against this exact channel layout.
+  sequences: ["t1_pre", "t1_gd", "flair", "t2"]
+
+  # Accepted on-disk filenames per channel, tried in order. Extend this list
+  # for your site rather than renaming your imaging.
+  sequence_aliases:
+    t1_pre: ["t1_pre", "t1", "T1", "t1_native", "T1w"]
+    t1_gd:  ["t1_gd", "t1c", "T1c", "t1_post", "t1ce", "T1wCE", "t1_gd_reg"]
+    flair:  ["flair", "FLAIR", "t2_flair", "T2wFLAIR"]
+    # `bravo` is the GE BRAVO sequence used by the BrainMetShare cohort; it
+    # occupies the T2 channel.
+    t2:     ["t2", "T2", "bravo", "BRAVO", "T2w"]
+
+  # Optional regex restricting which subdirectories count as cases. Empty means
+  # "any directory containing the required sequences", which is what you want.
+  # v1.40 hardcoded a prefix allowlist (Mets_, UCSF_, Yale_, ...), so a site
+  # with cases named PT_001/ silently loaded zero cases and was told nothing.
+  case_pattern: ""

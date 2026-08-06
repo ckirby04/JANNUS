@@ -1,0 +1,54 @@
+# JANNUS — local development / single-site deployment.
+#
+# For the external-validation workflow you do NOT need this. Use the CLI:
+#   docker run --gpus all -v /data/cohort:/data:ro -v /out:/out jannus:1.50 \
+#     predict --input /data --output /out
+#
+# v1.50 changes:
+#   * port published on 127.0.0.1 only (was 0.0.0.0, i.e. every interface)
+#   * imaging and configs mounted read-only
+#   * no ./data bind — v1.40 mounted a symlink to one developer's absolute path
+#   * LLM API keys removed; the validation workflow needs no credentials, and
+#     passing them here invites their use on a PHI-bearing host
+
+services:
+  jannus:
+    build: .
+    image: jannus:1.50
+    # Override the image ENTRYPOINT (the CLI) to run the API service instead.
+    entrypoint: ["python", "run_server.py"]
+    command: ["--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      # Bound to the host loopback. Publishing beyond localhost requires a
+      # TLS-terminating reverse proxy — see SECURITY.md.
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./model:/app/model:ro
+      - ./configs:/app/configs:ro
+      # Point this at your cohort. Read-only: JANNUS never writes to its input.
+      - ${JANNUS_DATA_ROOT:-./data}:/data:ro
+      - ./outputs:/out
+    environment:
+      # Authentication is required by default. Do not set this to false on any
+      # host reachable from a network.
+      - AUTH_REQUIRED=true
+      # Empty disables cross-origin access. Name explicit origins if needed.
+      - CORS_ORIGINS=
+      # Site-specific salt for pseudonymising case identifiers in logs.
+      - JANNUS_LOG_SALT=${JANNUS_LOG_SALT:-}
+      - DATABASE_PATH=/out/jannus.db
+      - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health').status==200 else 1)"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3

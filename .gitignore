@@ -1,0 +1,127 @@
+# ---------------------------------------------------------------------------
+# Secrets. Never relax these.
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+secrets.yaml
+
+# ---------------------------------------------------------------------------
+# Patient data. Nothing under here may ever be committed.
+#
+# This block is deliberately broad. JANNUS is run inside hospitals on
+# identifiable imaging, and the failure mode we are guarding against is a site
+# cloning the repo, dropping its own cohort into data/, and pushing. Extend it
+# if your site uses other formats; do not narrow it.
+# ---------------------------------------------------------------------------
+data/
+Data/
+raw_data/
+*.nii
+*.nii.gz
+*.nrrd
+*.mha
+*.mhd
+*.dcm
+*.DCM
+DICOM/
+*.npz
+*.npy
+outputs/
+predictions/
+results/
+provenance.json
+validation_report.json
+report.md
+cohort_results.csv
+
+# ---------------------------------------------------------------------------
+# Model weights. Distributed separately and pinned by weights.lock.json.
+# ---------------------------------------------------------------------------
+model/
+models/
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.safetensors
+nnUNet/
+nnDetection/
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+develop-eggs/
+dist/
+eggs/
+.eggs/
+sdist/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+env/
+venv/
+.venv/
+ENV/
+
+# ---------------------------------------------------------------------------
+# Tooling caches
+# ---------------------------------------------------------------------------
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.ipynb_checkpoints/
+.tox/
+.nox/
+
+# ---------------------------------------------------------------------------
+# Databases and vector stores (may contain case identifiers)
+# ---------------------------------------------------------------------------
+*.db
+*.sqlite
+*.sqlite3
+chromadb*/
+*.chroma
+bm25_index.pkl
+*.pkl
+
+# ---------------------------------------------------------------------------
+# Logs (redacted, but still site-specific)
+# ---------------------------------------------------------------------------
+*.log
+logs/
+
+# ---------------------------------------------------------------------------
+# Editors / OS
+# ---------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+.claude/
+
+# ---------------------------------------------------------------------------
+# Binary documents — attach to a PR or an issue instead of committing
+# ---------------------------------------------------------------------------
+*.docx
+*.xlsx
+*.pdf
+*.zip
+*.tar
+*.tar.gz
