@@ -38,6 +38,10 @@ segmentation = [
     "torch>=2.1,<3.0",
     "torchvision>=0.16,<1.0",
     "monai>=1.3,<2.0",
+    # MONAI treats einops as optional, but SwinUNETR — one of our seven base
+    # models — imports it at construction time. Without it the pipeline fails
+    # with an OptionalImportError deep inside MONAI rather than at install.
+    "einops>=0.7,<1.0",
     "SimpleITK>=2.3,<3.0",
     "scikit-image>=0.21,<1.0",
     "scikit-learn>=1.3,<2.0",
