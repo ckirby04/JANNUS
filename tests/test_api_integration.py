@@ -1,15 +1,20 @@
 """Integration tests for FastAPI endpoints using TestClient."""
 
+import pytest
+
+# Requires the optional `api` extra. This guard must precede every other
+# import: a bare `import fastapi` at module scope fails collection outright on a
+# core install (`pip install -e ".[dev]"`), which is what CI verifies.
+pytest.importorskip("fastapi", reason="install jannus[api]")
+
 import io
 from unittest.mock import MagicMock, patch
 
 import numpy as np
-import pytest
 
 # Skip if SimpleITK not installed (needed by server imports)
 SimpleITK = pytest.importorskip("SimpleITK")
 nib = pytest.importorskip("nibabel")
-
 
 @pytest.fixture(scope="module")
 def client():
@@ -26,7 +31,6 @@ def client():
         with TestClient(app) as c:
             yield c
 
-
 class TestHealthEndpoint:
     def test_health_returns_200(self, client):
         response = client.get("/health")
@@ -41,13 +45,11 @@ class TestHealthEndpoint:
         data = response.json()
         assert data["models_loaded"] == 0
 
-
 class TestModelsEndpoint:
     def test_models_returns_list(self, client):
         response = client.get("/models")
         assert response.status_code == 200
         assert isinstance(response.json(), list)
-
 
 def _nifti_upload_files():
     files = []
@@ -62,7 +64,6 @@ def _nifti_upload_files():
 
         files.append(("files", (f"{seq}.nii.gz", buf, "application/gzip")))
     return files
-
 
 class TestPredictEndpoint:
     def test_predict_requires_authentication_by_default(self, client):

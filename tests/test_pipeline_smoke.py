@@ -18,10 +18,16 @@ randomly-initialised 3D CNN, so no MONAI model-zoo download, no nnU-Net
 checkpoint tree, and no patch-model weights are required.
 """
 
+import pytest
+
+# Requires the optional `segmentation` extra. This guard must precede every other
+# import: a bare `import torch` at module scope fails collection outright on a
+# core install (`pip install -e ".[dev]"`), which is what CI verifies.
+pytest.importorskip("torch", reason="install jannus[segmentation]")
+
 from pathlib import Path
 
 import numpy as np
-import pytest
 import torch
 
 from jannus.segmentation.model_adapters import build_adapter
@@ -35,7 +41,6 @@ from jannus.segmentation.stacking import (
 
 CONFIG_PATH = Path(__file__).resolve().parent.parent / "configs" / "models.yaml"
 
-
 # ---------------------------------------------------------------------------
 # Stacker-only checks
 # ---------------------------------------------------------------------------
@@ -48,7 +53,6 @@ def test_stacking_model_names_are_seven():
     ]
     assert STACKING_IN_CHANNELS == 9  # 7 preds + variance + range
 
-
 def test_stacking_classifier_v2_accepts_nine_channel_input():
     model = StackingClassifierV2(in_channels=STACKING_IN_CHANNELS)
     model.eval()
@@ -57,7 +61,6 @@ def test_stacking_classifier_v2_accepts_nine_channel_input():
         y = model(x)
     assert y.shape == (1, 1, 32, 32, 32)
 
-
 def test_build_stacking_features_from_preds_has_correct_shape():
     preds = np.random.rand(7, 16, 16, 16).astype(np.float32)
     features = build_stacking_features_from_preds(preds)
@@ -65,7 +68,6 @@ def test_build_stacking_features_from_preds_has_correct_shape():
     # Last two channels are variance and range; both should be non-negative.
     assert (features[-2] >= 0).all()
     assert (features[-1] >= 0).all()
-
 
 # ---------------------------------------------------------------------------
 # Adapter smoke tests (stub mode)
@@ -93,7 +95,6 @@ def test_adapter_stub_predicts_correct_shape(arch, extra_cfg):
     assert prob.shape == (24, 24, 24)
     arr = prob.numpy() if isinstance(prob, torch.Tensor) else prob
     assert (arr >= 0).all() and (arr <= 1).all()
-
 
 # ---------------------------------------------------------------------------
 # Full pipeline end-to-end

@@ -1,9 +1,15 @@
 """Tests for hybrid retrieval engine."""
 
+import pytest
+
+# Requires the optional `rag` extra. This guard must precede every other
+# import: a bare `import chromadb` at module scope fails collection outright on a
+# core install (`pip install -e ".[dev]"`), which is what CI verifies.
+pytest.importorskip("chromadb", reason="install jannus[rag]")
+
 from unittest.mock import MagicMock, patch
 
 import numpy as np
-import pytest
 
 from jannus.rag.retrieval import HybridRetriever, RetrievalResult
 
@@ -53,7 +59,6 @@ class TestRRFFusion:
         for _, score in fused:
             assert score > 0
 
-
 class TestSparseSearch:
     def test_sparse_no_index(self):
         """Graceful empty result when no BM25 index loaded."""
@@ -64,7 +69,6 @@ class TestSparseSearch:
 
         results = retriever._sparse_search("brain metastasis", k=10)
         assert results == []
-
 
 class TestDenseSearch:
     def test_dense_search_mock(self):
@@ -97,7 +101,6 @@ class TestDenseSearch:
 
         results = retriever._dense_search(np.zeros(512), k=5)
         assert results == []
-
 
 class TestRetrievalResult:
     def test_result_fields(self):

@@ -1,5 +1,11 @@
 """Tests for postprocessing operations."""
 
+import pytest
+
+# jannus.segmentation.postprocessing imports torch transitively. Guard before
+# any other import so collection survives a core-only install.
+pytest.importorskip("torch", reason="install jannus[segmentation]")
+
 import numpy as np
 
 from jannus.segmentation.postprocessing import (

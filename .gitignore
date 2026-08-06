@@ -17,9 +17,21 @@ secrets.yaml
 # cloning the repo, dropping its own cohort into data/, and pushing. Extend it
 # if your site uses other formats; do not narrow it.
 # ---------------------------------------------------------------------------
-data/
-Data/
-raw_data/
+# Root-anchored with a leading slash. An unanchored `data/` matches at ANY
+# depth — and on a case-insensitive filesystem `Data/` matches `data/` too —
+# which silently excluded the entire `src/jannus/data/` package (dataset
+# discovery, QC and loading) from the v1.50 commit. CI caught it; the leading
+# slash and the explicit un-ignore below prevent a recurrence.
+/data/
+/Data/
+/raw_data/
+/DICOM/
+/outputs/
+/predictions/
+/results/
+!src/jannus/data/
+!src/jannus/data/**
+
 *.nii
 *.nii.gz
 *.nrrd
@@ -27,12 +39,8 @@ raw_data/
 *.mhd
 *.dcm
 *.DCM
-DICOM/
 *.npz
 *.npy
-outputs/
-predictions/
-results/
 provenance.json
 validation_report.json
 report.md

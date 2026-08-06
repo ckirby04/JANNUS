@@ -3,12 +3,18 @@ Integration tests for the RAG pipeline.
 End-to-end: embed -> ingest mock paper -> chunk -> store -> retrieve -> verify.
 """
 
+import pytest
+
+# Requires the optional `rag` extra. This guard must precede every other
+# import: a bare `import chromadb` at module scope fails collection outright on a
+# core install (`pip install -e ".[dev]"`), which is what CI verifies.
+pytest.importorskip("chromadb", reason="install jannus[rag]")
+
 import os
 import tempfile
 from unittest.mock import MagicMock, patch
 
 import numpy as np
-import pytest
 
 
 @pytest.fixture
@@ -41,7 +47,6 @@ def mock_open_clip():
         mock_create.return_value = (mock_model, mock_preprocess, mock_preprocess)
         mock_get_tok.return_value = mock_tokenizer
         yield
-
 
 @pytest.fixture
 def mock_papers():
@@ -79,7 +84,6 @@ def mock_papers():
             has_full_text=True,
         ),
     ]
-
 
 class TestEndToEndPipeline:
     """Integration tests covering the full RAG pipeline."""

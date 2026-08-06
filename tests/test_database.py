@@ -1,7 +1,11 @@
 """Tests for the database layer."""
 
-
 import pytest
+
+# Requires the optional `api` extra. This guard must precede every other
+# import: a bare `import fastapi` at module scope fails collection outright on a
+# core install (`pip install -e ".[dev]"`), which is what CI verifies.
+pytest.importorskip("fastapi", reason="install jannus[api]")
 
 from jannus.api.database import Database
 
@@ -11,7 +15,6 @@ def db(tmp_path):
     """Create a temporary database for testing."""
     db_path = str(tmp_path / "test.db")
     return Database(db_path)
-
 
 class TestAPIKeyManagement:
     def test_create_api_key(self, db):
@@ -44,7 +47,6 @@ class TestAPIKeyManagement:
         names = {k["name"] for k in keys}
         assert names == {"key1", "key2"}
 
-
 class TestPredictionRecords:
     def test_record_and_get_prediction(self, db):
         db.record_prediction(
@@ -69,7 +71,6 @@ class TestPredictionRecords:
     def test_prediction_not_found(self, db):
         assert db.get_prediction("nonexistent") is None
 
-
 class TestAuditLog:
     def test_log_event(self, db):
         db.log_event(
@@ -80,7 +81,6 @@ class TestAuditLog:
             status_code=200,
         )
         # No exception means success
-
 
 class TestAnalytics:
     def test_stats_empty_db(self, db):

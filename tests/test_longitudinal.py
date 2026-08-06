@@ -1,5 +1,12 @@
 """Tests for longitudinal tracking and lesion matching."""
 
+import pytest
+
+# Requires the optional `rag` extra. This guard must precede every other
+# import: a bare `import chromadb` at module scope fails collection outright on a
+# core install (`pip install -e ".[dev]"`), which is what CI verifies.
+pytest.importorskip("chromadb", reason="install jannus[rag]")
+
 import numpy as np
 
 from jannus.segmentation.longitudinal import LongitudinalTracker

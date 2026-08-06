@@ -1,6 +1,12 @@
 """Tests for ModelRegistry."""
 
 import pytest
+
+# Requires the optional `segmentation` extra. This guard must precede every other
+# import: a bare `import torch` at module scope fails collection outright on a
+# core install (`pip install -e ".[dev]"`), which is what CI verifies.
+pytest.importorskip("torch", reason="install jannus[segmentation]")
+
 import torch
 
 from jannus.segmentation.model_registry import ModelRegistry

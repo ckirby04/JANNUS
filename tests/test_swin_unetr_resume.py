@@ -15,11 +15,18 @@ various LATEST_PATH checkpoint contents to verify the script:
 
 from __future__ import annotations
 
+import pytest
+
+# Requires the optional `segmentation` extra. This guard must precede every other
+# import: a bare `import torch` at module scope fails collection outright on a
+# core install (`pip install -e ".[dev]"`), which is what CI verifies.
+pytest.importorskip("torch", reason="install jannus[segmentation]")
+
+
 import sys
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
 import torch
 from torch.amp import GradScaler
 
@@ -41,7 +48,6 @@ spec = importlib.util.spec_from_file_location(
 )
 train_swin_unetr = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(train_swin_unetr)
-
 
 @pytest.fixture
 def patched_environment(tmp_path, monkeypatch):
@@ -99,12 +105,10 @@ def patched_environment(tmp_path, monkeypatch):
 
     return calls, tmp_path
 
-
 def _run_main(argv_extra: list[str]):
     argv = ["train_swin_unetr.py", *argv_extra]
     with patch("sys.argv", argv):
         train_swin_unetr.main()
-
 
 def _stage_latest(path: Path, phase: int, epoch: int, best_val_dice: float):
     """Write a minimal LATEST checkpoint with just enough content for
@@ -130,7 +134,6 @@ def _stage_latest(path: Path, phase: int, epoch: int, best_val_dice: float):
         "best_val_dice": best_val_dice,
     }, path)
 
-
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
@@ -143,7 +146,6 @@ def test_fresh_run_runs_both_phases(patched_environment):
     assert len(calls) == 2
     assert calls[0] == {"phase": 1, "start_epoch": 1, "target_epochs": 3, "best_in": 0.0}
     assert calls[1] == {"phase": 2, "start_epoch": 1, "target_epochs": 5, "best_in": 0.0}
-
 
 def test_resume_mid_phase1(patched_environment):
     """LATEST has phase=1 epoch=2 best=0.3: phase 1 resumes at epoch 3,
@@ -162,7 +164,6 @@ def test_resume_mid_phase1(patched_environment):
     assert calls[1]["start_epoch"] == 1
     assert calls[1]["best_in"] == 0.3
 
-
 def test_resume_mid_phase2(patched_environment):
     """LATEST has phase=2 epoch=47 best=0.5: phase 1 skipped entirely,
     phase 2 resumes at epoch 48."""
@@ -176,7 +177,6 @@ def test_resume_mid_phase2(patched_environment):
     assert calls[0]["start_epoch"] == 48
     assert calls[0]["target_epochs"] == 500
     assert calls[0]["best_in"] == 0.5
-
 
 def test_resume_phase1_already_done(patched_environment):
     """LATEST phase=1 epoch=20 (all 20 epochs done). Script should skip
@@ -193,7 +193,6 @@ def test_resume_phase1_already_done(patched_environment):
     assert calls[0]["start_epoch"] == 1
     assert calls[0]["best_in"] == 0.27
 
-
 def test_resume_phase2_extend_epochs(patched_environment):
     """User resumes a finished phase-2 run with a larger --epochs-phase2
     to continue training. Should resume at epoch+1 of the new target."""
@@ -208,7 +207,6 @@ def test_resume_phase2_extend_epochs(patched_environment):
     assert calls[0]["start_epoch"] == 151
     assert calls[0]["target_epochs"] == 300
     assert calls[0]["best_in"] == 0.68
-
 
 def test_explicit_phase_2_without_resume_runs_fresh(patched_environment):
     """--phase 2 without --resume: phase 2 from epoch 1, phase 1 skipped."""

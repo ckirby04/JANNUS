@@ -2,6 +2,11 @@
 
 import pytest
 
+# Requires the optional `rag` extra. This guard must precede every other
+# import: a bare `import chromadb` at module scope fails collection outright on a
+# core install (`pip install -e ".[dev]"`), which is what CI verifies.
+pytest.importorskip("chromadb", reason="install jannus[rag]")
+
 from jannus.rag.chunking import SemanticChunker
 from jannus.rag.ingestion import Paper
 
@@ -9,7 +14,6 @@ from jannus.rag.ingestion import Paper
 @pytest.fixture
 def chunker():
     return SemanticChunker()
-
 
 @pytest.fixture
 def abstract_only_paper():
@@ -24,7 +28,6 @@ def abstract_only_paper():
         doi="10.1234/test",
         mesh_terms=["Brain Neoplasms"],
     )
-
 
 @pytest.fixture
 def fulltext_paper():
@@ -46,14 +49,12 @@ def fulltext_paper():
         has_full_text=True,
     )
 
-
 def test_abstract_only_paper(chunker, abstract_only_paper):
     """Abstract-only papers produce a single chunk."""
     chunks = chunker.chunk_paper(abstract_only_paper)
     assert len(chunks) >= 1
     assert chunks[0].section == "abstract"
     assert chunks[0].paper_id == "11111111"
-
 
 def test_fulltext_sections(chunker, fulltext_paper):
     """Full-text papers produce chunks for each section."""
@@ -63,7 +64,6 @@ def test_fulltext_sections(chunker, fulltext_paper):
     assert "introduction" in sections
     assert "methods" in sections
     assert "results" in sections
-
 
 def test_long_section_splitting(chunker):
     """Sections exceeding max tokens get split into multiple chunks."""
@@ -81,7 +81,6 @@ def test_long_section_splitting(chunker):
     # All chunks should belong to abstract section
     assert all(c.section == "abstract" for c in chunks)
 
-
 def test_chunk_id_format(chunker, abstract_only_paper):
     """Chunk IDs follow {pmid}_{section}_{index} format."""
     chunks = chunker.chunk_paper(abstract_only_paper)
@@ -90,7 +89,6 @@ def test_chunk_id_format(chunker, abstract_only_paper):
         assert len(parts) >= 3
         assert parts[0] == "11111111"
         assert parts[-1].isdigit()
-
 
 def test_chunk_metadata(chunker, abstract_only_paper):
     """Chunks preserve paper metadata."""
@@ -102,13 +100,11 @@ def test_chunk_metadata(chunker, abstract_only_paper):
     assert chunk.year == "2024"
     assert chunk.doi == "10.1234/test"
 
-
 def test_total_chunks_set(chunker, fulltext_paper):
     """Each chunk has total_chunks set to the total number of chunks."""
     chunks = chunker.chunk_paper(fulltext_paper)
     for chunk in chunks:
         assert chunk.total_chunks == len(chunks)
-
 
 def test_chunk_corpus(chunker, abstract_only_paper, fulltext_paper):
     """chunk_corpus processes multiple papers."""
@@ -116,7 +112,6 @@ def test_chunk_corpus(chunker, abstract_only_paper, fulltext_paper):
     pmids = {c.paper_id for c in chunks}
     assert "11111111" in pmids
     assert "22222222" in pmids
-
 
 def test_empty_abstract_paper(chunker):
     """Paper with no abstract and no full text produces no chunks."""

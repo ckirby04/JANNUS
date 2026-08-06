@@ -1,5 +1,12 @@
 """Tests for PubMed ingestion pipeline."""
 
+import pytest
+
+# Requires the optional `rag` extra. This guard must precede every other
+# import: a bare `import Bio` at module scope fails collection outright on a
+# core install (`pip install -e ".[dev]"`), which is what CI verifies.
+pytest.importorskip("Bio", reason="install jannus[rag]")
+
 from unittest.mock import MagicMock, patch
 
 from jannus.rag.ingestion import SECTION_MAP, Paper, PubMedIngester
@@ -22,7 +29,6 @@ def _make_medline_record(**kwargs):
     defaults.update(kwargs)
     return defaults
 
-
 class TestPaper:
     def test_paper_creation(self):
         p = Paper(pmid="123", title="Test", abstract="Abstract text")
@@ -41,7 +47,6 @@ class TestPaper:
         assert p.has_full_text is True
         assert "introduction" in p.sections
 
-
 class TestSectionMapping:
     def test_methods_variants(self):
         assert SECTION_MAP["materials and methods"] == "methods"
@@ -55,7 +60,6 @@ class TestSectionMapping:
     def test_conclusion_variants(self):
         assert SECTION_MAP["conclusion"] == "conclusions"
         assert SECTION_MAP["summary"] == "conclusions"
-
 
 class TestDeduplication:
     @patch("jannus.rag.ingestion.PubMedIngester.__init__", return_value=None)
@@ -81,7 +85,6 @@ class TestDeduplication:
         assert result2 == ["4"]
         assert "2" not in result2
         assert "3" not in result2
-
 
 class TestMedlineParsing:
     @patch("jannus.rag.ingestion.PubMedIngester.__init__", return_value=None)

@@ -1,5 +1,12 @@
 """Tests for RECIST 1.1 measurements and classification."""
 
+import pytest
+
+# Requires the optional `rag` extra. This guard must precede every other
+# import: a bare `import chromadb` at module scope fails collection outright on a
+# core install (`pip install -e ".[dev]"`), which is what CI verifies.
+pytest.importorskip("chromadb", reason="install jannus[rag]")
+
 import numpy as np
 
 from jannus.rag.recist import RECISTMeasurer
@@ -52,7 +59,6 @@ class TestRECISTMeasurer:
         sod, measurements = self.measurer.compute_sum_of_diameters(mask, voxel_spacing=(1.0, 1.0, 1.0))
         assert sod > 0
         assert len(measurements) == 2
-
 
 class TestRECISTClassification:
     def setup_method(self):

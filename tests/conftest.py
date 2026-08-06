@@ -1,15 +1,24 @@
 """
-Test fixtures for BrainMetScan test suite.
-Provides synthetic volumes, dummy models, and temporary data.
-"""
+Shared test fixtures.
 
+All fixtures build synthetic data in-process — no patient imaging, no model
+weights, no network. See CONTRIBUTING.md.
+
+torch is imported lazily inside the fixtures that need it. Importing it at
+module scope made *collection itself* fail on a core-only install
+(`pip install -e ".[dev]"`), taking down the entire suite including the tests
+that have no deep-learning dependency at all. CI installs core+dev precisely to
+prove that split holds, so conftest must not undo it.
+"""
 
 import nibabel as nib
 import numpy as np
 import pytest
-import torch
 
-from jannus.segmentation.unet import LightweightUNet3D
+
+def _torch():
+    """Import torch on demand, skipping the test if the extra is absent."""
+    return pytest.importorskip("torch", reason="install jannus[segmentation]")
 
 
 @pytest.fixture
@@ -39,7 +48,7 @@ def synthetic_volume():
                     # Make lesion brighter in t1_gd channel (index 1)
                     image[1, i, j, k] += 3.0
 
-    return torch.from_numpy(image), mask, center, radius
+    return _torch().from_numpy(image), mask, center, radius
 
 
 @pytest.fixture
@@ -66,12 +75,15 @@ def synthetic_volume_two_lesions():
                 if np.sqrt((i - c2[0]) ** 2 + (j - c2[1]) ** 2 + (k - c2[2]) ** 2) < 3:
                     mask[i, j, k] = 1.0
 
-    return torch.from_numpy(image), mask
+    return _torch().from_numpy(image), mask
 
 
 @pytest.fixture
 def dummy_model():
     """Create a small UNet model for testing (CPU only)."""
+    _torch()
+    from jannus.segmentation.unet import LightweightUNet3D
+
     model = LightweightUNet3D(
         in_channels=4,
         out_channels=1,
@@ -89,7 +101,7 @@ def dummy_model():
 def dummy_checkpoint(dummy_model, tmp_path):
     """Save a dummy model checkpoint and return its path."""
     checkpoint_path = tmp_path / "dummy_model.pth"
-    torch.save(
+    _torch().save(
         {
             "model_state_dict": dummy_model.state_dict(),
             "epoch": 1,

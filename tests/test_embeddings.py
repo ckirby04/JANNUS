@@ -1,9 +1,15 @@
 """Tests for BiomedCLIP embedding module."""
 
+import pytest
+
+# Requires the optional `rag` extra. This guard must precede every other
+# import: a bare `import chromadb` at module scope fails collection outright on a
+# core install (`pip install -e ".[dev]"`), which is what CI verifies.
+pytest.importorskip("chromadb", reason="install jannus[rag]")
+
 from unittest.mock import MagicMock, patch
 
 import numpy as np
-import pytest
 from PIL import Image
 
 
@@ -31,7 +37,6 @@ def mock_open_clip():
         mock_get_tok.return_value = mock_tokenizer
         yield mock_model
 
-
 def _fake_encode(x):
     """Create fake normalized embeddings."""
     import torch
@@ -39,26 +44,22 @@ def _fake_encode(x):
     emb = torch.randn(batch_size, 512)
     return emb
 
-
 @pytest.fixture
 def embedder(mock_open_clip):
     """Create embedder with mocked model."""
     from jannus.rag.embeddings import BiomedCLIPEmbedder
     return BiomedCLIPEmbedder(device="cpu")
 
-
 def test_text_embedding_shape(embedder):
     """Verify text embedding produces (512,) output."""
     embedding = embedder.embed_text("brain metastasis MRI segmentation")
     assert embedding.shape == (512,)
-
 
 def test_text_embedding_normalized(embedder):
     """Verify text embedding is L2-normalized."""
     embedding = embedder.embed_text("brain metastasis treatment")
     norm = np.linalg.norm(embedding)
     assert abs(norm - 1.0) < 0.05, f"L2 norm should be ~1.0, got {norm}"
-
 
 def test_batch_embedding(embedder):
     """Verify batch text embedding produces (N, 512) output."""
@@ -70,13 +71,11 @@ def test_batch_embedding(embedder):
     embeddings = embedder.embed_texts(texts)
     assert embeddings.shape == (3, 512)
 
-
 def test_volume_embedding(embedder):
     """Verify MRI volume embedding produces (512,) output."""
     volume = np.random.randn(64, 64, 32).astype(np.float32)
     embedding = embedder.embed_mri_volume(volume, slice_axis=2, num_slices=8)
     assert embedding.shape == (512,)
-
 
 def test_volume_embedding_normalized(embedder):
     """Verify volume embedding is L2-normalized."""
@@ -85,7 +84,6 @@ def test_volume_embedding_normalized(embedder):
     norm = np.linalg.norm(embedding)
     assert abs(norm - 1.0) < 0.05, f"L2 norm should be ~1.0, got {norm}"
 
-
 def test_cross_modal_similarity(embedder):
     """Verify cosine similarity between text and image is in valid range."""
     text_emb = embedder.embed_text("brain metastasis")
@@ -93,7 +91,6 @@ def test_cross_modal_similarity(embedder):
     img_emb = embedder.embed_mri_volume(volume)
     similarity = np.dot(text_emb, img_emb)
     assert -1.0 <= similarity <= 1.0, f"Cosine similarity out of range: {similarity}"
-
 
 def test_image_embedding(embedder):
     """Verify PIL image embedding produces correct shape."""

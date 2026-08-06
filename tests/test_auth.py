@@ -2,6 +2,11 @@
 
 import pytest
 
+# Requires the optional `api` extra. This guard must precede every other
+# import: a bare `import fastapi` at module scope fails collection outright on a
+# core install (`pip install -e ".[dev]"`), which is what CI verifies.
+pytest.importorskip("fastapi", reason="install jannus[api]")
+
 from jannus.api.auth import _check_rate_limit, _rate_limit_windows
 from jannus.api.database import Database
 
@@ -10,7 +15,6 @@ from jannus.api.database import Database
 def db(tmp_path):
     db_path = str(tmp_path / "auth_test.db")
     return Database(db_path)
-
 
 class TestRateLimiting:
     def test_allows_within_limit(self):
@@ -27,7 +31,6 @@ class TestRateLimiting:
         with pytest.raises(HTTPException) as exc_info:
             _check_rate_limit("test_key_2", 5)
         assert exc_info.value.status_code == 429
-
 
 class TestAuthPermissions:
     def test_anonymous_caller_is_denied_by_default(self, monkeypatch):
