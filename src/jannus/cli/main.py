@@ -231,6 +231,12 @@ def build_parser() -> argparse.ArgumentParser:
                        help="Path to weights.lock.json")
     fetch.add_argument("--verify-only", action="store_true",
                        help="Check what is already on disk; download nothing")
+    fetch.add_argument("--source", type=Path, default=None,
+                       help="Install from a local weights bundle (a drive, an "
+                            "internal share, an earlier release) instead of "
+                            "downloading. Checkpoints are located by SHA-256, so "
+                            "the bundle's directory layout need not match the "
+                            "manifest. Nothing leaves your network.")
 
     return parser
 

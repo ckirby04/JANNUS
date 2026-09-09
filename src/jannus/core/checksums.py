@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -32,6 +33,9 @@ from .errors import WeightsError
 #: Read size for streaming hashes. Checkpoints run to hundreds of MB; never
 #: read one fully into memory.
 _CHUNK = 1024 * 1024
+
+#: Directories never worth walking when searching a bundle for checkpoints.
+_WALK_SKIP = {".git", "__pycache__", ".venv", "venv", "node_modules"}
 
 MANIFEST_FILENAME = "weights.lock.json"
 MANIFEST_SCHEMA_VERSION = 1
@@ -228,6 +232,57 @@ def verify_manifest(
                 f"{len(failures)} of {len(results)} checkpoint(s) failed verification:\n  {detail}"
             )
     return results
+
+
+def index_by_size(source_root: str | Path) -> dict[int, list[Path]]:
+    """Index every regular file under ``source_root`` by byte size.
+
+    Built once and reused across every manifest entry: the directory walk is
+    the expensive part, and a weights bundle — or a previous release's tree —
+    can hold thousands of files.
+    """
+    index: dict[int, list[Path]] = {}
+    for dirpath, dirnames, filenames in os.walk(source_root):
+        dirnames[:] = [d for d in dirnames if d not in _WALK_SKIP]
+        for name in filenames:
+            candidate = Path(dirpath) / name
+            try:
+                size = candidate.stat().st_size
+            except OSError:
+                # Unreadable file or dangling symlink: not a usable candidate.
+                continue
+            index.setdefault(size, []).append(candidate)
+    return index
+
+
+def locate_checkpoint(
+    entry: WeightEntry, source_root: str | Path, size_index: dict[int, list[Path]]
+) -> Path | None:
+    """Find the file under ``source_root`` whose content matches ``entry``.
+
+    The manifest-relative path is tried first, since a bundle built to match
+    the manifest is the common case. When that misses, fall back to a
+    content-addressed search, because a bundle assembled by hand — or an
+    earlier release's tree — often lays checkpoints out under different
+    directory names than the manifest expects. Candidates are pre-filtered by
+    exact byte size, which is free, and confirmed by SHA-256, which is exact.
+
+    Matching on filename would not do: every nnU-Net fold ships a file called
+    ``checkpoint_final.pth``, so a basename match is ambiguous in precisely the
+    case this fallback exists to handle.
+    """
+    direct = Path(source_root) / entry.path
+    if (
+        direct.is_file()
+        and direct.stat().st_size == entry.bytes
+        and sha256_file(direct) == entry.sha256
+    ):
+        return direct
+
+    for candidate in size_index.get(entry.bytes, ()):
+        if candidate != direct and sha256_file(candidate) == entry.sha256:
+            return candidate
+    return None
 
 
 def hash_loaded_checkpoints(paths: dict[str, str | Path]) -> dict[str, str]:

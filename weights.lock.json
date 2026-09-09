@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "pipeline_revision": "7base-stackerv2-r1",
-  "_comment": "SHA-256 manifest for every artefact the production pipeline loads: model checkpoints (role base/stacker) and the nnU-Net trainer sidecars required to load them (role config). `jannus doctor` and `jannus fetch-weights` verify against this, and `jannus predict` records the hash of each checkpoint it actually loaded in provenance.json. That pairing is what lets a coordinating site prove every participating site ran identical weights. No `url` field is set: weights are distributed under separate terms, not from this repository. See docs/INSTALL.md.",
+  "_comment": "SHA-256 manifest for every artefact the production pipeline loads: model checkpoints (role base/stacker) and the nnU-Net trainer sidecars required to load them (role config). `jannus doctor` and `jannus fetch-weights` verify against this, and `jannus predict` records the hash of each checkpoint it actually loaded in provenance.json. That pairing is what lets a coordinating site prove every participating site ran identical weights. No `url` field is set: weights are distributed under separate terms, not from this repository — sites install them with `jannus fetch-weights --source /path/to/bundle`. See docs/INSTALL.md.",
   "weights": [
     {
       "name": "nnunet_3d",

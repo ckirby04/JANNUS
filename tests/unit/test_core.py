@@ -9,7 +9,9 @@ import yaml
 
 from jannus.core.checksums import (
     WeightEntry,
+    index_by_size,
     load_manifest,
+    locate_checkpoint,
     sha256_file,
     verify_entry,
     verify_manifest,
@@ -221,6 +223,88 @@ class TestChecksums:
         manifest.write_text(json.dumps({"schema_version": 99, "weights": []}))
         with pytest.raises(WeightsError, match="schema version"):
             load_manifest(manifest)
+
+
+class TestBundleLookup:
+    """Locating checkpoints inside a bundle that arrived out-of-band.
+
+    Weights ship under separate terms from the source, so the usual path at a
+    new site is `fetch-weights --source /some/bundle` rather than a download.
+    """
+
+    def _entry(self, target, name="x", path="model/x.pth"):
+        return WeightEntry(
+            name=name, path=path, sha256=sha256_file(target),
+            bytes=target.stat().st_size,
+        )
+
+    def test_finds_a_checkpoint_at_the_manifest_path(self, tmp_path):
+        target = tmp_path / "model" / "x.pth"
+        target.parent.mkdir(parents=True)
+        target.write_bytes(b"weights")
+
+        entry = self._entry(target)
+        found = locate_checkpoint(entry, tmp_path, index_by_size(tmp_path))
+        assert found == target
+
+    def test_finds_a_checkpoint_filed_under_a_different_layout(self, tmp_path):
+        # The case this fallback exists for: a bundle, or an earlier release's
+        # tree, that stores the same checkpoint under another directory name.
+        actual = tmp_path / "some" / "other" / "layout" / "final.pth"
+        actual.parent.mkdir(parents=True)
+        actual.write_bytes(b"weights")
+
+        entry = self._entry(actual, path="model/expected/elsewhere.pth")
+        found = locate_checkpoint(entry, tmp_path, index_by_size(tmp_path))
+        assert found == actual
+
+    def test_ignores_a_same_named_file_with_different_content(self, tmp_path):
+        # Every nnU-Net fold ships a "checkpoint_final.pth", so a basename
+        # match would be ambiguous. Only content may decide.
+        # Same byte length, so the size pre-filter keeps both candidates and
+        # only the SHA-256 can tell them apart. The decoy is deliberately
+        # placed where a walk reaches it *first*, so an implementation that
+        # took the first same-sized file would return the wrong one.
+        decoy = tmp_path / "aaa_fold" / "checkpoint_final.pth"
+        decoy.parent.mkdir(parents=True)
+        decoy.write_bytes(b"the wrong fold")
+
+        real = tmp_path / "zzz_fold" / "checkpoint_final.pth"
+        real.parent.mkdir(parents=True)
+        real.write_bytes(b"the right fold")
+        assert decoy.stat().st_size == real.stat().st_size
+
+        entry = self._entry(
+            real, path="nnUNet/trainer/zzz_fold/checkpoint_final.pth"
+        )
+        found = locate_checkpoint(entry, tmp_path, index_by_size(tmp_path))
+        assert found == real
+
+    def test_returns_none_when_the_bundle_lacks_the_checkpoint(self, tmp_path):
+        (tmp_path / "unrelated.pth").write_bytes(b"nope")
+        entry = WeightEntry(
+            name="x", path="model/x.pth", sha256="0" * 64, bytes=7
+        )
+        assert locate_checkpoint(entry, tmp_path, index_by_size(tmp_path)) is None
+
+    def test_a_corrupt_file_at_the_manifest_path_is_not_accepted(self, tmp_path):
+        # Same size, wrong bytes: must not be silently installed.
+        target = tmp_path / "model" / "x.pth"
+        target.parent.mkdir(parents=True)
+        target.write_bytes(b"corrupt")
+
+        entry = WeightEntry(
+            name="x", path="model/x.pth", sha256="0" * 64, bytes=7
+        )
+        assert locate_checkpoint(entry, tmp_path, index_by_size(tmp_path)) is None
+
+    def test_index_skips_vcs_and_cache_directories(self, tmp_path):
+        (tmp_path / ".git").mkdir()
+        (tmp_path / ".git" / "blob.pth").write_bytes(b"weights")
+        (tmp_path / "real.pth").write_bytes(b"weights")
+
+        found = index_by_size(tmp_path)[7]
+        assert found == [tmp_path / "real.pth"]
 
 
 def test_shipped_weights_manifest_is_valid():

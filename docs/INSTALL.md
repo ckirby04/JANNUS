@@ -70,17 +70,31 @@ sidecars. Every one is pinned by SHA-256 and byte size in
 ### Obtaining them
 
 Weights are released under separate terms from the source code. Request access from the
-maintainer (see [CITATION.cff](../CITATION.cff)), then place each file at the path listed
-in `weights.lock.json` relative to the repository root, and verify:
+maintainer (see [CITATION.cff](../CITATION.cff)). The bundle you receive can be installed
+in either of two ways.
+
+**From wherever the bundle landed** — a USB drive, an internal share, a mounted archive,
+or an earlier JANNUS release on the same machine:
+
+```bash
+jannus fetch-weights --source /mnt/usb/jannus-weights
+```
+
+Each artefact is located inside `--source` by SHA-256, so the bundle's internal directory
+layout does not have to match `weights.lock.json`; a file is copied into place only once
+its hash matches, and one that fails verification afterwards is deleted rather than left
+where the pipeline could load it. This makes no network connections.
+
+**By hand**, placing each file at the path listed in `weights.lock.json` relative to the
+repository root, then:
 
 ```bash
 jannus fetch-weights --verify-only
 ```
 
 Every line must read `OK`. If the manifest carries download URLs for your distribution,
-`jannus fetch-weights` (without `--verify-only`) fetches and verifies them automatically;
-a checkpoint that fails its hash after download is deleted rather than left where the
-pipeline could load it.
+`jannus fetch-weights` (without `--verify-only` or `--source`) fetches and verifies them
+automatically, under the same delete-on-mismatch rule.
 
 ### What is pinned
 

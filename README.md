@@ -22,7 +22,7 @@ If you are an external site, this is your entire workflow:
 pip install "jannus[segmentation,nnunet]"
 
 jannus doctor                                    # is this machine set up correctly?
-jannus fetch-weights                             # download + verify checkpoints
+jannus fetch-weights --source /path/to/weights   # install + verify checkpoints
 jannus validate-data --input /data/cohort        # QC before spending GPU time
 jannus predict  --input /data/cohort --output /out/pred
 jannus evaluate --input /data/cohort --predictions /out/pred --output /out/results
@@ -129,9 +129,12 @@ before pulling in a multi-gigabyte deep-learning stack. Extras: `segmentation`, 
 
 **Model weights are not distributed in this repository.** They are pinned by SHA-256 in
 [`weights.lock.json`](weights.lock.json) and obtained separately — see
-[`docs/INSTALL.md`](docs/INSTALL.md). `jannus doctor` refuses to run inference against
-unverified checkpoints, because a silently-stubbed model produces plausible-looking noise
-that would otherwise be indistinguishable from a real validation result.
+[`docs/INSTALL.md`](docs/INSTALL.md). Once you have the bundle, `jannus fetch-weights
+--source /path/to/bundle` installs it: each artefact is located by hash, so the bundle's
+layout need not match the manifest, and nothing is copied into place until it verifies.
+`jannus doctor` refuses to run inference against unverified checkpoints, because a
+silently-stubbed model produces plausible-looking noise that would otherwise be
+indistinguishable from a real validation result.
 
 ---
 

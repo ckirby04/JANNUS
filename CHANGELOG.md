@@ -29,6 +29,21 @@ to the model, the weights or the operating point; no reported metric moves.
   case-insensitive checkout and 404'd on GitHub and on Linux. One of them is the
   RESEARCH-USE-ONLY banner at the top of the README.
 
+### ✨ Added
+
+- **`jannus fetch-weights --source DIR`** — install checkpoints from a local bundle: a
+  drive, an internal share, or an earlier release on the same machine. Weights ship under
+  separate terms and the manifest carries no download URLs, so at most sites the previous
+  guidance ("place each file at the path in `weights.lock.json`") was the only path, and
+  it required hand-rebuilding an eleven-segment nnU-Net directory tree.
+
+  Artefacts are located inside `--source` by SHA-256, so the bundle's layout does not have
+  to match the manifest. Matching on filename would not do: every nnU-Net fold ships a
+  file called `checkpoint_final.pth`. Nothing is copied into place until its hash matches,
+  and anything failing verification afterwards is deleted rather than left where the
+  pipeline could load it — the same rule the download path already enforced. Makes no
+  network connections.
+
 ---
 
 ## [1.50.0] — 2026-08-05

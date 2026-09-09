@@ -9,11 +9,17 @@ partially-installed environment.
 from __future__ import annotations
 
 import json
+import shutil
 import time
 from pathlib import Path
 
 from .._version import __version__
-from ..core.checksums import MANIFEST_FILENAME, load_manifest, verify_manifest
+from ..core.checksums import (
+    MANIFEST_FILENAME,
+    WeightEntry,
+    load_manifest,
+    verify_manifest,
+)
 from ..core.config import PUBLISHED_THRESHOLD, load_config
 from ..core.determinism import DEFAULT_SEED, configure_determinism
 from ..core.errors import (
@@ -437,6 +443,67 @@ def cmd_evaluate(args) -> int:
 # fetch-weights
 # ---------------------------------------------------------------------------
 
+def _install_from_source(
+    entries: list[WeightEntry], source_root: Path, dest_root: Path
+) -> list[WeightEntry]:
+    """Copy checkpoints out of a local bundle, verifying each one.
+
+    Weights are distributed under separate terms from the source, so the common
+    path at a new site is a bundle that arrived on a drive or an internal share
+    rather than an HTTP URL. Returns the entries that could not be resolved, so
+    the caller can still try downloading those.
+
+    A checkpoint is only ever moved into place after its hash matches: a file
+    that fails verification is removed rather than left where the pipeline
+    could load it, which is the same rule the download path enforces.
+    """
+    from ..core.checksums import index_by_size, locate_checkpoint, verify_entry
+
+    if not source_root.is_dir():
+        raise WeightsError(
+            f"--source {source_root} is not a directory.",
+            remedy="Point --source at the directory holding the weights bundle.",
+        )
+
+    print(f"\nSearching {source_root} for {len(entries)} missing checkpoint(s)...")
+    size_index = index_by_size(source_root)
+
+    unresolved: list[WeightEntry] = []
+    for entry in entries:
+        found = locate_checkpoint(entry, source_root, size_index)
+        if found is None:
+            print(f"  NOTFOUND {entry.name}  (no file under --source matches its hash)")
+            unresolved.append(entry)
+            continue
+
+        target = dest_root / entry.path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        # The sidecars are a few KB; "0 MB" reads like a broken file.
+        size = (
+            f"{entry.bytes / 1e6:.0f} MB" if entry.bytes >= 1e6
+            else f"{max(entry.bytes / 1e3, 0.1):.1f} KB"
+        )
+        print(f"  copying  {entry.name}  ({size})")
+        print(f"           from {found}")
+        tmp = target.with_suffix(target.suffix + ".partial")
+        try:
+            shutil.copyfile(found, tmp)
+        except OSError as exc:
+            tmp.unlink(missing_ok=True)
+            raise WeightsError(f"Copy failed for {entry.name}: {exc}") from exc
+        tmp.replace(target)
+
+        result = verify_entry(entry, dest_root)
+        print(f"  {result.describe()}")
+        if not result.ok:
+            target.unlink(missing_ok=True)
+            raise WeightsError(
+                f"{entry.name} failed verification after copying and was removed."
+            )
+
+    return unresolved
+
+
 def cmd_fetch_weights(args) -> int:
     _banner("model weights")
     root = _repo_root(args)
@@ -467,6 +534,12 @@ def cmd_fetch_weights(args) -> int:
               f"nothing downloaded).")
         return 5
 
+    if getattr(args, "source", None):
+        missing = _install_from_source(missing, Path(args.source), dest_root)
+        if not missing:
+            print("\nAll checkpoints installed from --source and verified.")
+            return 0
+
     downloadable = [e for e in missing if e.url]
     if not downloadable:
         raise WeightsError(
@@ -474,9 +547,10 @@ def cmd_fetch_weights(args) -> int:
             f"download URL for them.",
             remedy=(
                 "Model weights are distributed separately from the source repository. "
-                "Request access from the maintainer and place the files at the paths "
-                "listed in weights.lock.json, then re-run `jannus fetch-weights "
-                "--verify-only`. See docs/INSTALL.md."
+                "Request access from the maintainer, then either place the files at "
+                "the paths listed in weights.lock.json and run `jannus fetch-weights "
+                "--verify-only`, or point JANNUS at the bundle wherever it landed: "
+                "`jannus fetch-weights --source /path/to/bundle`. See docs/INSTALL.md."
             ),
         )
 

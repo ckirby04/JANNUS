@@ -44,7 +44,10 @@ Co-register upstream (ANTs, elastix, FSL FLIRT), then re-run. See
 jannus fetch-weights --verify-only
 ```
 
-- `MISSING` — the file is not at the path in `weights.lock.json`.
+- `MISSING` — the file is not at the path in `weights.lock.json`. If you have the bundle
+  but it is laid out differently, you do not need to rearrange it by hand:
+  `jannus fetch-weights --source /path/to/bundle` locates each artefact by SHA-256 and
+  copies it into place.
 - `SIZE` — truncated download, or a Git LFS pointer file rather than the real weights.
 - `HASH` — the file is the right size but different content. Do not use it.
 
