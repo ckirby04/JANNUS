@@ -238,6 +238,27 @@ def test_shipped_weights_manifest_is_valid():
         assert entry.bytes > 0
 
 
+def test_shipped_manifest_pins_the_nnunet_sidecars():
+    """nnU-Net reads plans.json and dataset.json before any checkpoint.
+
+    Pinning only the .pth files let `doctor` report READY on an install where
+    `predict` could not build the pipeline, so these must stay in the manifest.
+    """
+    from pathlib import Path
+
+    repo_root = Path(__file__).resolve().parents[2]
+    entries = load_manifest(repo_root / "weights.lock.json")
+    sidecars = {e.name: e for e in entries if e.role == "config"}
+
+    assert set(sidecars) == {
+        "nnunet_3d_plans", "nnunet_3d_dataset",
+        "nnunet_2d_plans", "nnunet_2d_dataset",
+    }
+    for name, entry in sidecars.items():
+        expected = "plans.json" if name.endswith("_plans") else "dataset.json"
+        assert entry.path.endswith(expected)
+
+
 # ---------------------------------------------------------------------------
 # PHI-safe logging
 # ---------------------------------------------------------------------------

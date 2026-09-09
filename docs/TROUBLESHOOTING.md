@@ -48,6 +48,11 @@ jannus fetch-weights --verify-only
 - `SIZE` — truncated download, or a Git LFS pointer file rather than the real weights.
 - `HASH` — the file is the right size but different content. Do not use it.
 
+A `MISSING` line naming `plans.json` or `dataset.json` means the checkpoints arrived
+without their nnU-Net trainer sidecars. nnU-Net reads those before any checkpoint, so the
+pipeline cannot be built without them; they are part of the weights bundle, not
+something the repository can supply.
+
 JANNUS refuses to proceed here on purpose. An unverified checkpoint falls back to random
 initialisation, which produces a well-formed probability map containing no information —
 indistinguishable from a real result until someone publishes it.

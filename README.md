@@ -147,7 +147,7 @@ src/jannus/
   rag/           optional literature retrieval
   cli/           the `jannus` command
 configs/models.yaml    base-model registry, operating point, sequence naming
-weights.lock.json      SHA-256 of every checkpoint
+weights.lock.json      SHA-256 of every checkpoint and nnU-Net trainer sidecar
 tests/unit/            synthetic-fixture tests, no weights or PHI required
 scripts/               research and training scripts (not part of the package)
 docs/                  installation, data spec, validation protocol, model card

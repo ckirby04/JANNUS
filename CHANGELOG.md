@@ -8,6 +8,24 @@ reported metric is treated as breaking regardless of its size.
 
 ---
 
+## [Unreleased]
+
+Post-release fixes from a first end-to-end install of v1.50 on a clean machine. No change
+to the model, the weights or the operating point; no reported metric moves.
+
+### 🐛 Fixed
+
+- **`weights.lock.json` did not pin the nnU-Net trainer sidecars.**
+  `nnUNetPredictor.initialize_from_trained_model_folder()` reads `plans.json` and
+  `dataset.json` from the trainer directory *before* it loads a checkpoint. The manifest
+  pinned only the eight `.pth` files, so an install that had every checkpoint — and that
+  `jannus doctor` reported **READY** — still failed when `jannus predict` tried to build
+  the pipeline. The four sidecars are now pinned under a new `config` role, verified by
+  `doctor`, and installed by `fetch-weights` like any other artefact. `doctor` now checks
+  the `config` role too, so it can no longer pass an install that `predict` would fail on.
+
+---
+
 ## [1.50.0] — 2026-08-05
 
 The v1.40 → v1.50 release converts a working research codebase into a product that can be

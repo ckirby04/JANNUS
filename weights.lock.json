@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "pipeline_revision": "7base-stackerv2-r1",
-  "_comment": "SHA-256 manifest for every checkpoint the production pipeline loads. `jannus doctor` and `jannus fetch-weights` verify against this, and `jannus predict` records the hash of each checkpoint it actually loaded in provenance.json. That pairing is what lets a coordinating site prove every participating site ran identical weights. No `url` field is set: weights are distributed under separate terms, not from this repository. See docs/INSTALL.md.",
+  "_comment": "SHA-256 manifest for every artefact the production pipeline loads: model checkpoints (role base/stacker) and the nnU-Net trainer sidecars required to load them (role config). `jannus doctor` and `jannus fetch-weights` verify against this, and `jannus predict` records the hash of each checkpoint it actually loaded in provenance.json. That pairing is what lets a coordinating site prove every participating site ran identical weights. No `url` field is set: weights are distributed under separate terms, not from this repository. See docs/INSTALL.md.",
   "weights": [
     {
       "name": "nnunet_3d",
@@ -18,6 +18,38 @@
       "bytes": 165241295,
       "role": "base",
       "notes": "nnU-Net 2D, 500-epoch trainer, fold 0 only."
+    },
+    {
+      "name": "nnunet_3d_plans",
+      "path": "nnUNet/nnUNet_results/Dataset001_BrainMets/nnUNetTrainer_expanded2917__nnUNetPlans__3d_fullres/plans.json",
+      "sha256": "ce27f396bf468e0e3d5855dec73c135d706af87817d5d5c893cd8dc292bea90a",
+      "bytes": 12109,
+      "role": "config",
+      "notes": "nnUNetPredictor.initialize_from_trained_model_folder() loads plans.json and dataset.json from the trainer directory before it touches a checkpoint. Pinning the .pth alone left `doctor` reporting READY on an install where `predict` could not build the pipeline."
+    },
+    {
+      "name": "nnunet_3d_dataset",
+      "path": "nnUNet/nnUNet_results/Dataset001_BrainMets/nnUNetTrainer_expanded2917__nnUNetPlans__3d_fullres/dataset.json",
+      "sha256": "65d870e06c659618adfc7999205c205ae135feda0a65c983daffaad348307931",
+      "bytes": 269,
+      "role": "config",
+      "notes": "Channel names and label map for the 3D trainer. Determines num_input_channels, so a mismatch here silently changes what the network is fed."
+    },
+    {
+      "name": "nnunet_2d_plans",
+      "path": "nnUNet/nnUNet_results/Dataset001_BrainMets/nnUNetTrainer_500ep__nnUNetPlans__2d/plans.json",
+      "sha256": "ce27f396bf468e0e3d5855dec73c135d706af87817d5d5c893cd8dc292bea90a",
+      "bytes": 12109,
+      "role": "config",
+      "notes": "Byte-identical to the 3D trainer's plans.json — both configurations live in one plans file. Listed separately because nnU-Net resolves it per trainer directory."
+    },
+    {
+      "name": "nnunet_2d_dataset",
+      "path": "nnUNet/nnUNet_results/Dataset001_BrainMets/nnUNetTrainer_500ep__nnUNetPlans__2d/dataset.json",
+      "sha256": "52ed3cf99b14bdbc9e91fb1a57d8d65e1ecb568be0c8110b1ae545d3d9acc42f",
+      "bytes": 269,
+      "role": "config",
+      "notes": "Channel names and label map for the 2D trainer."
     },
     {
       "name": "patch_8",

@@ -54,8 +54,9 @@ party. See [PHI_AND_DEIDENTIFICATION.md](PHI_AND_DEIDENTIFICATION.md).
 **Weights are not distributed in this repository**, and a fresh clone cannot run inference
 until you obtain them.
 
-Eight checkpoints are required, totalling roughly 780 MB. Every one is pinned by SHA-256
-and byte size in [`weights.lock.json`](../weights.lock.json):
+Eight checkpoints are required, totalling roughly 780 MB, plus four small nnU-Net trainer
+sidecars. Every one is pinned by SHA-256 and byte size in
+[`weights.lock.json`](../weights.lock.json):
 
 | Name | Role | Size |
 |---|---|---|
@@ -64,6 +65,7 @@ and byte size in [`weights.lock.json`](../weights.lock.json):
 | `swin_unetr` | base | 256 MB |
 | `patch_8` / `patch_12` / `patch_24` / `patch_36` | base | 27 MB each |
 | `stacker` | meta-learner | 5.5 MB |
+| `nnunet_{3d,2d}_plans` / `nnunet_{3d,2d}_dataset` | config | 12 KB / 269 B |
 
 ### Obtaining them
 
@@ -79,6 +81,14 @@ Every line must read `OK`. If the manifest carries download URLs for your distri
 `jannus fetch-weights` (without `--verify-only`) fetches and verifies them automatically;
 a checkpoint that fails its hash after download is deleted rather than left where the
 pipeline could load it.
+
+### What is pinned
+
+The manifest covers twelve artefacts, not just the eight checkpoints: nnU-Net reads
+`plans.json` and `dataset.json` from its trainer directory *before* it reads a checkpoint,
+so those four sidecars are pinned and verified too. An install that has the `.pth` files
+but not the sidecars cannot build the pipeline, and `jannus doctor` reports it as
+NOT READY rather than passing an install that `jannus predict` would fail on.
 
 ### Why verification is mandatory
 

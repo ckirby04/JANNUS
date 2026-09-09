@@ -138,8 +138,13 @@ def cmd_doctor(args) -> int:
         root = _repo_root(args)
         manifest_path = Path(args.weights_manifest) if args.weights_manifest else root / MANIFEST_FILENAME
         try:
+            # "config" covers the nnU-Net trainer sidecars (plans.json,
+            # dataset.json). They are not checkpoints, but nnU-Net reads them
+            # before it reads a checkpoint, so an install missing them cannot
+            # run `predict` — and must not be reported READY.
             results = verify_manifest(
-                manifest_path, root, roles=("base", "stacker"), raise_on_failure=False
+                manifest_path, root, roles=("base", "stacker", "config"),
+                raise_on_failure=False,
             )
             for result in results:
                 print(f"  {result.describe()}")
