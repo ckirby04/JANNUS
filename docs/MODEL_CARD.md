@@ -186,4 +186,4 @@ with Neosoma Brain Mets (K252922, cleared December 2025) as the candidate predic
 outstanding: IFU finalisation, IRB-approved sequestered pivotal cohort (≥ 70 cases),
 consensus neuroradiologist reads, and an FDA pre-submission meeting.
 
-See [INTENDED_USE.md](intended_use.md).
+See [INTENDED_USE.md](INTENDED_USE.md).
