@@ -23,6 +23,11 @@ to the model, the weights or the operating point; no reported metric moves.
   the pipeline. The four sidecars are now pinned under a new `config` role, verified by
   `doctor`, and installed by `fetch-weights` like any other artefact. `doctor` now checks
   the `config` role too, so it can no longer pass an install that `predict` would fail on.
+- **`docs/intended_use.md` is now `docs/INTENDED_USE.md`.** Every reference to it — both
+  README links, the model card, and the citation written into every generated report —
+  used the uppercase name. The file was committed lowercase, so all four resolved on a
+  case-insensitive checkout and 404'd on GitHub and on Linux. One of them is the
+  RESEARCH-USE-ONLY banner at the top of the README.
 
 ---
 
