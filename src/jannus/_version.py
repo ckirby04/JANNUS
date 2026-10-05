@@ -8,7 +8,7 @@ coordinating site tie a result file back to the code that produced it.
 
 from __future__ import annotations
 
-__version__ = "1.50.0"
+__version__ = "1.50.1"
 
 # Bumped whenever a change could move a metric. Sites comparing results across
 # runs must compare this, not `__version__` alone: a packaging-only release

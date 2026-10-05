@@ -1,3 +1,9 @@
+> ⚠️ **DEPRECATED — DO NOT CITE (added 2026-10-05).** The performance figures in this
+> document are not valid estimates of JANNUS performance. The evaluation cohort
+> overlapped training data, the shipped pipeline does not reproduce these results,
+> and mm-based metrics used incorrect voxel spacing. See tag `audit/1.50-defects`
+> (experiments/lesion_detection/CLOSEOUT.md) for details. Successor: JANNUS 1.60.
+
 # External cross-validation protocol
 
 For hospitals, academic groups and independent researchers validating JANNUS on their own
@@ -137,10 +143,10 @@ cohort difficulty and annotation convention rather than from the model.
 ---
 
 ## Interpreting your results
-
+ [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
 Compare against the internal reference in [MODEL_CARD.md](MODEL_CARD.md). The
 measurable-disease scope (≥ 10 mm) is the meaningful comparison — it is the proposed
-Indication for Use, and the scope on which JANNUS is competitive with the cleared
+Indication for Use, and the scope on which JANNUS is competitive with the cleared [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 predicate.
 
 ### If your numbers are lower than ours
@@ -149,8 +155,8 @@ This is common and usually explicable. In rough order of likelihood:
 
 - **Annotation convention.** A different boundary convention easily moves lesion-wise
   Dice by 0.05–0.10.
-- **Smaller lesions.** Sensitivity is strongly size-dependent — 0.061 below 3 mm versus
-  0.986 above 20 mm. Check the stratified table in your report before comparing headline
+- **Smaller lesions.** Sensitivity is strongly size-dependent — 0.061 below 3 mm versus [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
+  0.986 above 20 mm. Check the stratified table in your report before comparing headline [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
   numbers; a cohort weighted toward small lesions will look worse for reasons that have
   nothing to do with your site.
 - **Acquisition protocol.** Thick slices and high anisotropy both reduce small-lesion
@@ -171,7 +177,7 @@ prediction/ground-truth pairing is correct, and that `jannus doctor` reported RE
 
 ### HD95 and MSD
 
-These are far above the FDA thresholds in our own results (17.26 mm vs ≤ 2.94 mm) and
+These are far above the FDA thresholds in our own results (17.26 mm vs ≤ 2.94 mm) and [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 will likely be high at your site too. They are dominated by isolated false-positive
 components far from any true lesion, which drag the 95th-percentile surface distance
 enormously. This is a known limitation, documented rather than hidden — see

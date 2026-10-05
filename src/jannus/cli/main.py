@@ -27,6 +27,15 @@ from ..core.logging import configure_logging
 #: Default config location, relative to the repo root.
 DEFAULT_CONFIG = "configs/models.yaml"
 
+#: Printed to stderr on every invocation (v1.50.1). ASCII only, so a Windows
+#: console without UTF-8 cannot turn the warning itself into a crash.
+DEPRECATION_WARNING = (
+    "WARNING: JANNUS 1.50 is DEPRECATED - DO NOT CITE its performance figures. "
+    "The evaluation cohort overlapped training data, the shipped pipeline does not "
+    "reproduce the published results, and mm-based metrics used incorrect voxel "
+    "spacing. See tag audit/1.50-defects. Successor: JANNUS 1.60."
+)
+
 
 def _find_default_config() -> Path | None:
     """Locate `configs/models.yaml` for a user who did not pass --config.
@@ -242,6 +251,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    print(DEPRECATION_WARNING, file=sys.stderr)
     parser = build_parser()
     args = parser.parse_args(argv)
 

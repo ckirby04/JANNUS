@@ -1,3 +1,9 @@
+> ⚠️ **DEPRECATED — DO NOT CITE (added 2026-10-05).** The performance figures in this
+> document are not valid estimates of JANNUS performance. The evaluation cohort
+> overlapped training data, the shipped pipeline does not reproduce these results,
+> and mm-based metrics used incorrect voxel spacing. See tag `audit/1.50-defects`
+> (experiments/lesion_detection/CLOSEOUT.md) for details. Successor: JANNUS 1.60.
+
 # Troubleshooting
 
 Start with `jannus doctor` — it diagnoses most setup problems without touching patient
@@ -124,7 +130,7 @@ Work through, in order:
 
 1. **Check the threshold.** `jannus doctor` warns if it differs from 0.55. If you ran
    v1.40, your masks were generated at 0.5 and should be regenerated.
-2. **Check the size distribution.** Sensitivity ranges from 0.061 below 3 mm to 0.986
+2. **Check the size distribution.** Sensitivity ranges from 0.061 below 3 mm to 0.986 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
    above 20 mm. A cohort weighted toward small lesions looks worse for reasons unrelated
    to your site. Compare the stratified table, not the headline number.
 3. **Check the validation warnings.** Anisotropic voxels and out-of-range spacing both

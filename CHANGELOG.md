@@ -1,3 +1,9 @@
+> ⚠️ **DEPRECATED — DO NOT CITE (added 2026-10-05).** The performance figures in this
+> document are not valid estimates of JANNUS performance. The evaluation cohort
+> overlapped training data, the shipped pipeline does not reproduce these results,
+> and mm-based metrics used incorrect voxel spacing. See tag `audit/1.50-defects`
+> (experiments/lesion_detection/CLOSEOUT.md) for details. Successor: JANNUS 1.60.
+
 # Changelog
 
 All notable changes to JANNUS are documented here.
@@ -7,6 +13,29 @@ Versions follow semantic versioning, with the caveat that any change able to mov
 reported metric is treated as breaking regardless of its size.
 
 ---
+
+## [1.50.1] — 2026-10-05
+
+Deprecation notices only; no functional change.
+
+The published 1.50 performance figures are **not valid estimates** of JANNUS performance.
+The evaluation cohort overlapped training data, the shipped pipeline does not reproduce the
+results, and mm-based metrics used incorrect voxel spacing. Details are in tag
+`audit/1.50-defects` (`experiments/lesion_detection/CLOSEOUT.md`). Successor: JANNUS 1.60.
+
+- **Deprecation banner** added at the top of every document that carries published figures or
+  cohort claims, and of README, MODEL_CARD, CROSS_VALIDATION, INTENDED_USE and the
+  regulatory-facing documents.
+- **Inline `[INVALID — see PRIOR_DEFECTS #N in audit/1.50-defects]` markers** added next to each
+  specific claim in docs, configs and code comments. The original text and numbers are
+  unchanged. The full list is in `DEPRECATION_INDEX.md`.
+- **Runtime warning.** The `jannus` CLI prints a deprecation warning to stderr on every invocation.
+  This is the only code change, and it is tested in `tests/unit/test_cli_deprecation.py`.
+- **Not changed**, so `jannus evaluate` behaves as before (follow-up for 1.60): the reference figures
+  that `jannus evaluate` prints in report.md (`src/jannus/evaluation/report.py`), and the demo UI
+  strings in `demo/app.py`. Both are listed in `DEPRECATION_INDEX.md`.
+- The post-release fixes listed under `[Unreleased]` below were merged to main on 2026-09-08,
+  before this release, and are also part of the v1.50.1 tag.
 
 ## [Unreleased]
 
@@ -59,7 +88,7 @@ portability, security, and the ability to verify that a returned result is real.
 - **The inference threshold is now 0.55, and is actually read.**
   `configs/models.yaml` in v1.40 never defined `inference.threshold`. `BrainMetPipeline`
   looked it up, found nothing, and fell through to a hardcoded `0.5`. Meanwhile every
-  published figure — voxel Dice 0.7858, measurable-disease sensitivity 0.943 — was
+  published figure — voxel Dice 0.7858, measurable-disease sensitivity 0.943 — was [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
   produced by the evaluation scripts, which used `0.55`.
 
   The consequence: a site that followed the documented inference command reproduced
@@ -235,7 +264,7 @@ Every item below was a live defect in v1.40.
   (DWI/ADC) or consensus re-annotation — data-side investments, not model-side. Eleven
   stacker configurations across seven rounds were explored; see
   `docs/research/stacking_architectures_explored.md`.
-- Sub-3 mm sensitivity (0.061) is at the floor of MRI resolution and annotator agreement.
+- Sub-3 mm sensitivity (0.061) is at the floor of MRI resolution and annotator agreement. [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 - nnU-Net 2D uses fold 0 only; folds 1–4 stopped early without a final checkpoint.
 
 ---

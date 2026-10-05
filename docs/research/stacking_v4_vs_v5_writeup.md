@@ -1,3 +1,9 @@
+> ⚠️ **DEPRECATED — DO NOT CITE (added 2026-10-05).** The performance figures in this
+> document are not valid estimates of JANNUS performance. The evaluation cohort
+> overlapped training data, the shipped pipeline does not reproduce these results,
+> and mm-based metrics used incorrect voxel spacing. See tag `audit/1.50-defects`
+> (experiments/lesion_detection/CLOSEOUT.md) for details. Successor: JANNUS 1.60.
+
 # Stacking Classifier Experiments — Master Log
 
 **Date started:** 2026-04-18
@@ -8,10 +14,10 @@
 ## TL;DR — Current state (2026-04-24)
 
 **Production model:** tuned 7-model V2 stacker at `model/stacking_v5_seven_model_classifier.pth`
-- Dice 0.7858 (overall, all lesions), beats old 6-model by +0.008
-- Lesion-wise Sens 0.810, FPs/case 1.68, Lesion-wise Dice 0.791
-- **When scoped to ≥10mm ("measurable disease"): Sens 0.943, Dice-matched 0.835, Cohen's κ 0.867 (passes RANO-BM), SoLD error 1.84% — Neosoma-competitive**
-- **Remaining FDA blocker:** HD95 (18.36mm standalone, 17.26mm measurable-only) vs FDA ≤2.94mm.
+- Dice 0.7858 (overall, all lesions), beats old 6-model by +0.008 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
+- Lesion-wise Sens 0.810, FPs/case 1.68, Lesion-wise Dice 0.791 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
+- **When scoped to ≥10mm ("measurable disease"): Sens 0.943, Dice-matched 0.835, Cohen's κ 0.867 (passes RANO-BM), SoLD error 1.84% — Neosoma-competitive** [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
+- **Remaining FDA blocker:** HD95 (18.36mm standalone, 17.26mm measurable-only) vs FDA ≤2.94mm. [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
   - Confirmed systemic: every individual base has HD95 18-35mm; stacker can't fix what bases agree on.
 - See "Round 7: Clinical-scoped eval" below for the regulatory path.
 
@@ -24,9 +30,9 @@
 | Stacking grid | 256³ | 256³ |
 | Stacker architecture | 3D CNN on 32³ patches | 3D CNN on 32³ patches |
 | Training cases | ~480 non-eval | ~480 non-eval |
-| Eval cases | 84 held-out | 84 held-out (same) |
+| Eval cases | 84 held-out | 84 held-out (same) [INVALID — see PRIOR_DEFECTS #2 in audit/1.50-defects] |
 
-All metrics are computed on the same 84 held-out validation cases used for the v4 evaluation (`stacking_v5_results_per_case.json`). Threshold is swept per model from 0.05–0.95 in 0.05 steps; the threshold maximizing mean Dice is reported.
+All metrics are computed on the same 84 held-out validation cases used for the v4 evaluation (`stacking_v5_results_per_case.json`). Threshold is swept per model from 0.05–0.95 in 0.05 steps; the threshold maximizing mean Dice is reported. [INVALID — see PRIOR_DEFECTS #2 in audit/1.50-defects]
 
 ## Round 1: Uniform 256³ preprocessing (FAILED)
 
@@ -36,7 +42,7 @@ All metrics are computed on the same 84 held-out validation cases used for the v
 
 | Metric | Old 6-model | New 3-model (v1) | Δ |
 |---|---|---|---|
-| Dice | 0.7778 | **0.6453** | **−0.133** |
+| Dice | 0.7778 | **0.6453** | **−0.133** [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 
 Significant regression. A diagnostic on the cached base predictions showed why:
 
@@ -46,7 +52,7 @@ Significant regression. A diagnostic on the cached base predictions showed why:
 | nnU-Net 2D | 0.3023 | 0.7416 | 0.40 |
 | SwinUNETR 150ep | 0.6416 | — | 0.15 |
 | Simple mean (3) | 0.6040 | 0.7669 (6-model) | 0.30 |
-| Trained stacker | 0.6453 | 0.7778 (6-model) | 0.65 |
+| Trained stacker | 0.6453 | 0.7778 (6-model) | 0.65 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 
 Two findings stood out:
 1. **nnU-Net 3D lost 0.23 Dice** and **nnU-Net 2D lost 0.44 Dice** vs their previous standalone scores.
@@ -89,7 +95,7 @@ nnU-Net 3D matched its prior score within 0.002 Dice. Hybrid pipeline was confir
 
 | Metric | Old 6-model | New 3-model (v2) | Δ |
 |---|---|---|---|
-| Dice | 0.7778 | 0.7673 | −0.0105 |
+| Dice | 0.7778 | 0.7673 | −0.0105 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 | Std Dice | 0.1606 | 0.1567 | −0.0038 |
 | Sensitivity | 0.7848 | 0.7756 | −0.0092 |
 | Precision | 0.8050 | 0.7813 | −0.0238 |
@@ -173,7 +179,7 @@ Result: **precision restored, sensitivity reverted to baseline, tiny-lesion gain
 
 | Metric | Old 6-model | v2 single | 2-layer (MLP) | 2-layer (Conv) |
 |---|---|---|---|---|
-| Dice | 0.7778 | 0.7673 | 0.7237 | 0.7531 |
+| Dice | 0.7778 | 0.7673 | 0.7237 | 0.7531 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 | Sensitivity | 0.7848 | 0.7756 | 0.8649 | 0.7767 |
 | Precision | 0.8050 | 0.7813 | 0.6426 | 0.7530 |
 | Relaxed Dice (t=2) | 0.5406 | 0.5153 | 0.5918 | 0.5146 |
@@ -285,7 +291,7 @@ Assumes 1mm isotropic voxels (verified: BMS/UCSF 84-case eval set is 256³ at 1m
 
 ## Round 6: Stacker architecture iteration (2026-04-22 → 04-24)
 
-Goal was to break past the 7-model Dice 0.7858 plateau. Spoiler: nothing in this round beat it. Useful negative information.
+Goal was to break past the 7-model Dice 0.7858 plateau. Spoiler: nothing in this round beat it. Useful negative information. [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
 
 ### 6a. Deeper/wider stacker (StackingClassifierV2)
 
@@ -306,20 +312,20 @@ Fixes:
 - save-min-delta = **0.005** (prevents "lucky epoch 3" saves)
 - 3D flip/rotate/intensity-jitter **augmentation** on patches
 
-Result: **Dice 0.7858**, first config to beat the old 6-model aggregate.
+Result: **Dice 0.7858**, first config to beat the old 6-model aggregate. [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
 
 | Metric | Old 6-model | Tuned 7-model V2 |
 |---|---|---|
-| Dice | 0.7778 | **0.7858** |
+| Dice | 0.7778 | **0.7858** [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 | Precision | 0.8050 | **0.8063** |
 | Sens | 0.7848 | 0.7823 |
 | Tiny bucket | 0.3182 | **0.4028** |
-| FPs/case | — | 1.68 |
-| HD95 (mm) | — | 18.36 |
+| FPs/case | — | 1.68 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| HD95 (mm) | — | 18.36 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
 
 ### 6c. Dropping patch_8 (6-model, no p8)
 
-Per-base FDA diagnostic showed patch_8 was the worst base (HD95 35mm, 9.93 FPs/case). Dropping it: Dice 0.7808 (−0.005 overall), tiny bucket 0.4222 (+0.02), **but HD95 went UP** (18.36 → 21.72mm) and FPs/case up (1.68 → 2.44). Removing diversity hurt more than removing its noise.
+Per-base FDA diagnostic showed patch_8 was the worst base (HD95 35mm, 9.93 FPs/case). Dropping it: Dice 0.7808 (−0.005 overall), tiny bucket 0.4222 (+0.02), **but HD95 went UP** (18.36 → 21.72mm) and FPs/case up (1.68 → 2.44). Removing diversity hurt more than removing its noise. [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 
 ### 6d. Adding precision-focused SwinUNETR (8-model)
 
@@ -350,7 +356,7 @@ Interpretation: trusting the ensemble as a label oracle propagates the ensemble'
 ### 6g. Spatial FP characterization
 
 Ran per-FP spatial analysis on the tuned 7-model:
-- 141 total FPs across 84 cases (1.68/case)
+- 141 total FPs across 84 cases (1.68/case) [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
 - **Only 0.7% outside brain parenchyma** (brain mask filter would barely help)
 - **Only 0.7% tubular/vessel-like**
 - **Median FP distance to nearest GT lesion: 27mm**, p95 = 91mm
@@ -368,16 +374,16 @@ Tuned 7-model V2 evaluated with progressive GT size exclusions (don't-care treat
 
 | Cutoff | ~Diameter | Dice | Lesion-Sens | FPs/case | HD95 | GT kept |
 |---|---|---|---|---|---|---|
-| 0 (all) | — | 0.786 | 0.810 | 1.68 | 18.36 | 636/636 |
-| 5 vox | 2.1mm | 0.786 | 0.841 | 1.66 | 18.34 | 601/636 |
+| 0 (all) | — | 0.786 | 0.810 | 1.68 | 18.36 | 636/636 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| 5 vox | 2.1mm | 0.786 | 0.841 | 1.66 | 18.34 | 601/636 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 | 15 vox | 3.1mm | 0.787 | 0.863 | 1.66 | 18.42 | 566/636 |
 | **30 vox** | **3.9mm** | **0.792** | **0.901** ✓ | 1.63 | 16.77 | 484/636 |
-| **100 vox** | **5.8mm** | 0.784 | **0.951** ✓ | 1.61 | 14.36 | 287/636 |
+| **100 vox** | **5.8mm** | 0.784 | **0.951** ✓ | 1.61 | 14.36 | 287/636 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
 | 500 vox | 9.8mm | 0.700 | 0.975 | 1.60 | 12.43 | 127/636 |
 
 **Takeaways:**
 - IFU scoped to **≥4mm** → Sens 0.901 (first config to beat FDA ≥0.85)
-- IFU scoped to **≥6mm** → Sens 0.951, Dice steady at 0.78
+- IFU scoped to **≥6mm** → Sens 0.951, Dice steady at 0.78 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 - HD95 improves with cutoff but never clears FDA 2.94mm (still 4× over at ≥10mm)
 - FPs/case stays ~1.6 at every cutoff — FPs are evenly distributed by size, not concentrated at small scales
 
@@ -387,19 +393,19 @@ Stricter clinical scope matching RANO-BM's "measurable disease" standard. This i
 
 | Metric | BMS | Neosoma K252922 | FDA threshold | Status |
 |---|---|---|---|---|
-| Lesion-wise Sensitivity | **0.943** (0.90-0.98) | 0.90 | ≥0.85 | ✓ **exceeds Neosoma** |
-| FPs / case | 1.61 | 0.57 | ≤5 | ✓ passes |
-| Lesion-wise Dice (matched) | **0.835** | 0.86 | ≥0.70 | ✓ near Neosoma |
-| HD95 (mm) | 17.26 | 1.78 | ≤2.94 | ✗ fails |
-| MSD (mm) | 3.89 | 0.36 | ≤0.66 | ✗ fails |
+| Lesion-wise Sensitivity | **0.943** (0.90-0.98) | 0.90 | ≥0.85 | ✓ **exceeds Neosoma** [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| FPs / case | 1.61 | 0.57 | ≤5 | ✓ passes [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| Lesion-wise Dice (matched) | **0.835** | 0.86 | ≥0.70 | ✓ near Neosoma [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| HD95 (mm) | 17.26 | 1.78 | ≤2.94 | ✗ fails [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| MSD (mm) | 3.89 | 0.36 | ≤0.66 | ✗ fails [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
 
 **RANO-BM clinical metrics (new in this round):**
 - Measurable-classification accuracy: 0.935
-- **Cohen's κ: 0.867** ✓ passes RANO-BM ≥0.85
-- **SoLD relative error: 1.84%** ✓ beats RANO-BM ≤10% by 5×
+- **Cohen's κ: 0.867** ✓ passes RANO-BM ≥0.85 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
+- **SoLD relative error: 1.84%** ✓ beats RANO-BM ≤10% by 5× [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 - SoLD: GT 4186mm → pred 4109mm (77mm absolute error across 202 matched measurable lesions)
 
-**This is the first credibly FDA-competitive profile we've achieved.** Two Neosoma metrics exceeded, one matched, Cohen's κ passes RANO-BM. Only HD95/MSD remain failing.
+**This is the first credibly FDA-competitive profile we've achieved.** Two Neosoma metrics exceeded, one matched, Cohen's κ passes RANO-BM. Only HD95/MSD remain failing. [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 
 ### 7c. Size-stratified metrics (standardized going forward)
 
@@ -407,11 +413,11 @@ Every model report now prints metrics stratified by longest-axis bin. Tuned 7-mo
 
 | Bin | n GT | Sens | FPs/case | Mean DSC |
 |---|---|---|---|---|
-| <3mm | 33 | **0.061** | 0.54 | 0.53 |
-| 3-5mm | 82 | 0.439 | 0.54 | 0.64 |
-| 5-10mm | 304 | 0.773 | 0.46 | 0.72 |
-| 10-20mm | 144 | **0.903** | 0.12 | 0.81 |
-| >20mm | 73 | **0.986** | 0.02 | 0.87 |
+| <3mm | 33 | **0.061** | 0.54 | 0.53 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| 3-5mm | 82 | 0.439 | 0.54 | 0.64 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| 5-10mm | 304 | 0.773 | 0.46 | 0.72 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| 10-20mm | 144 | **0.903** | 0.12 | 0.81 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| >20mm | 73 | **0.986** | 0.02 | 0.87 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
 
 **Clear size-floor story:** below 3mm the model is effectively blind (6% detection — likely at the intersection of scanner resolution and annotator noise). Above 10mm we exceed FDA thresholds on both sensitivity and Dice. This stratification directly informs the IFU language.
 
@@ -419,11 +425,11 @@ Every model report now prints metrics stratified by longest-axis bin. Tuned 7-mo
 
 | Rank | Config | Overall Dice | Tiny DSC | HD95 (mm) | FPs/case | Status |
 |---|---|---|---|---|---|---|
-| 1 | **Tuned 7-model V2** | **0.7858** | 0.4028 | 18.36 | 1.68 | **production** |
+| 1 | **Tuned 7-model V2** | **0.7858** | 0.4028 | 18.36 | 1.68 | **production** [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
 | 2 | 6-model (no patch_8) | 0.7808 | 0.4222 | 21.72 | 2.44 | |
 | 3 | Pseudo-cleaned 7-model | 0.7761 | 0.4008 | 20.43 | 2.13 | |
 | 4 | Hard-neg 7-model | 0.7802 | 0.3846 | 20.46 | 1.87 | |
-| 5 | Old 6-model (v4) | 0.7778 | 0.3182 | — | — | legacy |
+| 5 | Old 6-model (v4) | 0.7778 | 0.3182 | — | — | legacy [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 | 6 | v2 single (hybrid 3-model) | 0.7744 | 0.4529 | 23.52 | 4.51 | |
 | 7 | 2-layer conv meta | 0.7593 | 0.4538 | 26.74 | 7.00 | |
 | 8 | 8-model (+ swin_precision) | 0.7693 | 0.4339 | 24.02 | 4.42 | |
@@ -435,7 +441,7 @@ Every model report now prints metrics stratified by longest-axis bin. Tuned 7-mo
 
 1. **Adopt tuned 7-model V2** as the cleared model (`stacking_v5_seven_model_classifier.pth`).
 2. **Scope IFU to "known brain metastases, lesions ≥10mm longest axis"** (or ≥5mm, depending on target market).
-   - At ≥10mm: Sens 0.943, Dice 0.835, RANO-BM κ 0.867, SoLD error 1.84% — all Neosoma-competitive.
+   - At ≥10mm: Sens 0.943, Dice 0.835, RANO-BM κ 0.867, SoLD error 1.84% — all Neosoma-competitive. [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
    - At ≥5mm: Sens 0.95 — trades some metric headroom for wider clinical coverage.
 3. **Arrange consensus neuroradiologist reads** on the 84-case dev cohort and (later) a sequestered pivotal cohort — required regardless for FDA.
 4. **The remaining HD95/MSD gap** is not closable at the stacker level (confirmed through Rounds 6a-e). Next structural intervention: per-base precision retraining of nnU-Net 3D/2D with boundary losses, OR adding DWI/ADC sequences (different signal entirely).
@@ -473,7 +479,7 @@ Every model report now prints metrics stratified by longest-axis bin. Tuned 7-mo
 **Model checkpoints:**
 - `model/swin_unetr_brainmets.pth` — general SwinUNETR (val 0.7915)
 - `model/swin_unetr_brainmets_precision.pth` — precision-trained SwinUNETR (val 0.8059)
-- `model/stacking_v5_seven_model_classifier.pth` — **production champion (Dice 0.7858)**
+- `model/stacking_v5_seven_model_classifier.pth` — **production champion (Dice 0.7858)** [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
 - `model/stacking_v5_six_model_classifier.pth` — 6-model no-p8
 - `model/stacking_v5_eight_model_classifier.pth` — 8-model with swin_precision
 - `model/stacking_v5_hybrid_classifier.pth` — v2 hybrid (Round 2)
@@ -511,7 +517,7 @@ Every model report now prints metrics stratified by longest-axis bin. Tuned 7-mo
 3. **Per-voxel meta-learners lack spatial context.** If a sensitivity-biased base is in the ensemble, a per-voxel meta will let its false positives through. A small 3D conv meta fixes this.
 4. **Aggregate Dice hides the interesting signal.** Every config tested sits within 0.03 of the others on overall Dice; per-bucket (and per-bin) breakdowns are where the clinically relevant differences live.
 5. **Stacker-level interventions cannot fix base-level FP placement.** Rounds 6a-g confirm: confidence filtering, hard-negative mining, dropping the worst base, adding more bases, pseudo-label cleaning — none of these crack HD95. The FPs originate in the base models' learned "lesion-like" features and are anatomically implausible but geometrically high-confidence. Fixing HD95 needs either base-model retraining with boundary losses, anatomical priors as input channels, or additional imaging sequences (DWI/ADC).
-6. **Bigger stacker ≠ better without tuned training.** StackingClassifierV2 (1.36M params) regressed to Dice 0.7629 under stock hyperparams but reached 0.7858 with warmup + augmentation + regularization + save-min-delta. Larger models need commensurate training-recipe changes.
+6. **Bigger stacker ≠ better without tuned training.** StackingClassifierV2 (1.36M params) regressed to Dice 0.7629 under stock hyperparams but reached 0.7858 with warmup + augmentation + regularization + save-min-delta. Larger models need commensurate training-recipe changes. [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
 7. **Automated label cleaning via ensemble agreement is a losing move.** The ensemble under-segments at boundaries; trusting it as a label oracle propagates its bias. Consensus radiologist reads are required for label improvement.
 8. **Report metrics stratified by lesion size.** The model's behavior is dramatically different by size bin (<3mm: 6% sens vs >20mm: 99% sens). Aggregate numbers hide this. Every eval report now prints `<3mm / 3-5mm / 5-10mm / 10-20mm / >20mm` sensitivity, FPs/case, and DSC.
 9. **When the model's signal doesn't reach the clinical floor, scope the IFU.** Below 3mm, detection is at noise. Narrowing the indication to "measurable disease" (≥10mm per RANO-BM) yields Neosoma-competitive numbers with the current model.

@@ -12,7 +12,7 @@ Architecture:  StackingClassifierV2 with in_channels=9
                (1x1x1 bottleneck + wider/deeper trunk + multi-scale branch + SE
                attention; ~700k params vs ~27k for the original StackingClassifier)
 
-Hypothesis: the old 6-model tops the aggregate Dice leaderboard (0.7778);
+Hypothesis: the old 6-model tops the aggregate Dice leaderboard (0.7778); [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
 today's v2 single stacker tops tiny-lesion Dice (0.4529). A 7-model stacker
 with both capabilities should keep both advantages.
 
