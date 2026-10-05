@@ -82,6 +82,9 @@ def main() -> int:
     L: list[str] = []
     w = L.append
 
+    w("> **STATUS: SUPERSEDED (2026-10-05).** This experiment was not completed, and JANNUS 1.50's published "
+      "figures are invalid as performance estimates (CLOSEOUT.md, tag `audit/1.50-defects`). "
+      "Successor: JANNUS 1.60.\n")
     w(f"# Lesion-level detection evaluation: {m['run_id']}\n")
     w(f"Generated from `metrics.json`. Commit `{prov['git'].get('commit', '?')[:12]}`"
       f"{' (dirty tree)' if prov['git'].get('dirty') else ''}, based on tag `{prov['git']['base_tag']}` "

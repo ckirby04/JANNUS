@@ -1,4 +1,4 @@
-> **STATUS: SUPERSEDED (2026-10-05).** This experiment was not completed. JANNUS 1.50's published figures are invalid as performance estimates (see CLOSEOUT.md, tag `audit/1.50-defects`). Successor: JANNUS 1.60 (`G:\BrainMetShare.60`).
+> **STATUS: SUPERSEDED (2026-10-05).** This experiment was not completed. JANNUS 1.50's published figures are invalid as performance estimates (see CLOSEOUT.md, tag `audit/1.50-defects`). Successor: JANNUS 1.60 (`G:\BrainMetShare\1.60`).
 
 # Lesion-level detection evaluation of JANNUS v1.50
 

@@ -171,3 +171,4 @@ system. **Nothing about the operating point is chosen from it.**
 - Wrote CLOSEOUT.md: the findings, the cached-map result, and the modules ready to port.
 - Marked README.md, PLAN.md and the REPORT template (`make_report.py`) as SUPERSEDED.
 - This branch is tagged `audit/1.50-defects` as an audit record and is not merged into main.
+- **Correction.** The first close-out commit `35b89e7` had two errors from an escaping mistake: the `\1.60` path in the README/PLAN banners was garbled, and the REPORT-template banner was missing. Both are fixed in the next commit. The tag `audit/1.50-defects`, local and never pushed, was moved to the corrected commit.
