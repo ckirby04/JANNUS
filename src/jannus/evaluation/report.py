@@ -12,18 +12,21 @@ from typing import Any
 
 from .harness import MEASURABLE_DISEASE_MM, CohortResult
 
-#: Published JANNUS figures on the 84-case internal held-out cohort. Shown [INVALID — see PRIOR_DEFECTS #2 in audit/1.50-defects]
-#: beside a site's numbers purely as a reference point — a site whose numbers
-#: differ has not necessarily done anything wrong, since cohort difficulty,
-#: annotation style and acquisition protocol all move these.
-REFERENCE_INTERNAL = {
-    "voxel_dice": 0.7858,  # [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
-    "lesion_sensitivity_all": 0.810,  # [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
-    "fp_per_case_all": 1.68,  # [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
-    "lesion_sensitivity_measurable": 0.943,  # [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
-    "lesion_dice_measurable": 0.835,  # [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
-    "hd95_measurable": 17.26,  # [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
-}
+#: v1.50.2: the published 1.50 figures were removed as the "reference" a site
+#: compares against. They are not valid performance estimates (tag
+#: audit/1.50-defects), so no internal reference is shown at all.
+NO_REFERENCE_LINE = (
+    "No validated reference performance exists for JANNUS 1.50; see audit/1.50-defects."
+)
+
+#: Placed verbatim at the top of every generated report.md.
+REPORT_DEPRECATION_BANNER = (
+    "> ⚠️ **DEPRECATED — DO NOT CITE (added 2026-10-05).** The performance figures in this\n"
+    "> document are not valid estimates of JANNUS performance. The evaluation cohort\n"
+    "> overlapped training data, the shipped pipeline does not reproduce these results,\n"
+    "> and mm-based metrics used incorrect voxel spacing. See tag `audit/1.50-defects`\n"
+    "> (experiments/lesion_detection/CLOSEOUT.md) for details. Successor: JANNUS 1.60."
+)
 
 #: Cleared predicate device, for context in the measurable-disease scope.
 REFERENCE_PREDICATE = {
@@ -59,7 +62,6 @@ def _ci(entry: dict[str, float], places: int = 3) -> str:
 
 def render_text_summary(result: CohortResult) -> str:
     """Compact terminal summary shown at the end of `jannus evaluate`."""
-    head = result.headline()
     lines = [
         f"Cases evaluated : {result.n_cases}" + (f"  ({result.n_failed} failed)" if result.n_failed else ""),
         "",
@@ -73,13 +75,8 @@ def render_text_summary(result: CohortResult) -> str:
         f"  lesion Dice(matched) {_ci(result.aggregate_measurable.get('lesion_wise_dice_matched', {}))}",
         f"  HD95 (mm)            {_ci(result.aggregate_measurable.get('hd95_mm', {}), 2)}",
         "",
-        "Reference (internal 84-case held-out):",  # [INVALID — see PRIOR_DEFECTS #2 in audit/1.50-defects]
-        f"  voxel Dice {REFERENCE_INTERNAL['voxel_dice']:.4f}   "
-        f"measurable sensitivity {REFERENCE_INTERNAL['lesion_sensitivity_measurable']:.3f}",
+        NO_REFERENCE_LINE,
     ]
-    delta = head["voxel_dice"] - REFERENCE_INTERNAL["voxel_dice"]
-    if delta == delta:
-        lines.append(f"  this cohort differs by {delta:+.4f} voxel Dice")
     return "\n".join(lines)
 
 
@@ -95,6 +92,8 @@ def render_markdown_report(
     lines: list[str] = []
     add = lines.append
 
+    add(REPORT_DEPRECATION_BANNER)
+    add("")
     add(f"# JANNUS external validation report — {site_name}")
     add("")
     add(f"- JANNUS version: `{prov.get('jannus_version', 'unknown')}`")
@@ -121,29 +120,26 @@ def render_markdown_report(
 
     add("## Headline metrics")
     add("")
-    add("| Metric | This site | Internal reference (84 cases) |")
-    add("|---|---|---|")
-    add(f"| Voxel Dice | {_ci(result.voxel_dice_all, 4)} | {REFERENCE_INTERNAL['voxel_dice']:.4f} |")
-    add(f"| Lesion sensitivity (all) | {_ci(result.aggregate_all.get('lesion_wise_sensitivity', {}))} "
-        f"| {REFERENCE_INTERNAL['lesion_sensitivity_all']:.3f} |")
-    add(f"| False positives / case | {_ci(result.aggregate_all.get('fp_per_case', {}), 2)} "
-        f"| {REFERENCE_INTERNAL['fp_per_case_all']:.2f} |")
+    add(NO_REFERENCE_LINE)
+    add("")
+    add("| Metric | This site |")
+    add("|---|---|")
+    add(f"| Voxel Dice | {_ci(result.voxel_dice_all, 4)} |")
+    add(f"| Lesion sensitivity (all) | {_ci(result.aggregate_all.get('lesion_wise_sensitivity', {}))} |")
+    add(f"| False positives / case | {_ci(result.aggregate_all.get('fp_per_case', {}), 2)} |")
     add("")
 
     add(f"## RANO-BM measurable disease (longest axis >= {MEASURABLE_DISEASE_MM:.0f} mm)")
     add("")
     add("This is the scope of the proposed Indication for Use.")
     add("")
-    add("| Metric | This site | Internal reference | Predicate |")
-    add("|---|---|---|---|")
+    add("| Metric | This site | Predicate |")
+    add("|---|---|---|")
     add(f"| Lesion sensitivity | {_ci(result.aggregate_measurable.get('lesion_wise_sensitivity', {}))} "
-        f"| {REFERENCE_INTERNAL['lesion_sensitivity_measurable']:.3f} "
         f"| {REFERENCE_PREDICATE['lesion_sensitivity_measurable']:.2f} |")
     add(f"| Lesion Dice (matched) | {_ci(result.aggregate_measurable.get('lesion_wise_dice_matched', {}))} "
-        f"| {REFERENCE_INTERNAL['lesion_dice_measurable']:.3f} "
         f"| {REFERENCE_PREDICATE['lesion_dice_measurable']:.2f} |")
     add(f"| HD95 (mm) | {_ci(result.aggregate_measurable.get('hd95_mm', {}), 2)} "
-        f"| {REFERENCE_INTERNAL['hd95_measurable']:.2f} "
         f"| {REFERENCE_PREDICATE['hd95_measurable']:.2f} |")
     add("")
     add(f"Predicate values are from {REFERENCE_PREDICATE['name']} as published, on that "

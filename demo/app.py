@@ -49,6 +49,15 @@ SUPERSET_DIR = Path(__file__).parent.parent.parent / "Superset" / "full" / "trai
 DATA_DIR = PREPROCESSED_DIR if PREPROCESSED_DIR.exists() else (SUPERSET_DIR if SUPERSET_DIR.exists() else Path(__file__).parent.parent / "data" / "train")
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+# v1.50.2: the published 1.50 performance figures are no longer displayed anywhere in
+# this demo. They are not valid estimates of JANNUS performance (tag audit/1.50-defects).
+DEPRECATION_NOTICE = (
+    "DEPRECATED - DO NOT CITE: JANNUS 1.50 performance figures are not valid estimates "
+    "(cohort overlapped training; shipped pipeline does not reproduce them; mm metrics used "
+    "wrong voxel spacing). See tag audit/1.50-defects. Successor: JANNUS 1.60."
+)
+DEPRECATION_NOTICE_SHORT = "DEPRECATED: 1.50 performance figures withdrawn - do not cite (audit/1.50-defects)"
+
 # Stacking cache directory (v1.4: 7 base predictions at 256^3)
 STACKING_CACHE_DIR = Path(__file__).parent.parent / "model" / "stacking_cache_v5_256"
 
@@ -759,7 +768,8 @@ def load_model():
         _model.load_state_dict(checkpoint)
 
     _model.eval()
-    print(f"Model loaded! (Epoch {_model_info.get('epoch', '?')}, Dice: {_model_info.get('val_dice', 0):.2%})")
+    print(f"Model loaded! (Epoch {_model_info.get('epoch', '?')})")
+    print(DEPRECATION_NOTICE)
 
     return _model
 
@@ -783,12 +793,12 @@ def load_stacking_model_cached():
         _model_info['stacking'] = True
         _model_info['num_models'] = len(STACKING_MODEL_NAMES)
         _model_info['model_names'] = list(STACKING_MODEL_NAMES)
-        _model_info['val_dice'] = 0.7858  # [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
+        _model_info['val_dice'] = None  # v1.50.2: published figure withdrawn (audit/1.50-defects)
         _model_info['epoch'] = 'stacking_v5_seven_model_v2'
 
         print(f"Stacking classifier loaded: {len(STACKING_MODEL_NAMES)} base models (v1.4 V2)")
         print(f"Models: {STACKING_MODEL_NAMES}")
-        print(f"Stacking Dice: 0.7858 (RANO-BM @≥10mm: Sens 0.943 vs Neosoma 0.90)")  # [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
+        print(DEPRECATION_NOTICE)
         print(f"Threshold: {STACKING_THRESHOLD}")
         print(f"Using preprocessed data from: {DATA_DIR}")
         print("=" * 50)
@@ -2236,7 +2246,7 @@ def generate_clinical_report(case_name, gt_features, pred_features, dice_score, 
     <p style="color: #a8a8a3; font-size: 0.85em; margin: 0 0 8px 0;">
         This report is AI-generated and requires expert radiologist review.
     </p>
-    <p style="color: #878681; font-size: 0.8em; margin: 0;">Model: {model_desc} &middot; Validation Dice: {_model_info.get("val_dice", 0):.1%}</p>
+    <p style="color: #878681; font-size: 0.8em; margin: 0;">Model: {model_desc} &middot; {DEPRECATION_NOTICE_SHORT}</p>
 </div>
 
 </div>
@@ -2465,7 +2475,8 @@ def export_report(case_name, slice_pct):
             },
             "model_info": {
                 "epoch": _model_info.get('epoch', 'unknown'),
-                "validation_dice": float(_model_info.get('val_dice', 0))
+                "validation_dice": None,  # v1.50.2: withdrawn (audit/1.50-defects)
+                "performance_note": DEPRECATION_NOTICE,
             }
         }
 
@@ -2886,13 +2897,13 @@ def create_demo():
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                     </svg>
-                    v1.4 7-Model Stacking V2 (78.6% Dice)
+                    v1.4 7-Model Stacking V2
                 </div>
-                <div class="header-badge" style="background: #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);">
+                <div class="header-badge" style="background: #b45309; box-shadow: 0 4px 12px rgba(180, 83, 9, 0.4);">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>
                     </svg>
-                    RANO-BM Sens 94.3% vs Neosoma 90%
+                    """ + DEPRECATION_NOTICE_SHORT + """
                 </div>
                 <div class="header-badge" style="background: #7c3aed; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -3068,7 +3079,8 @@ def create_demo():
         gr.HTML("""
         <div class="footer">
             <p style="font-weight: 600; color: #ffffff; margin-bottom: 8px; font-size: 1.1em;">BrainMetScan v1.4</p>
-            <p style="color: #a8a8a3;">7-Model Stacking V2 (78.6% Dice)  ·  RANO-BM Sens 94.3% vs Neosoma K252922 (90.0%)  ·  RAG-Enhanced Reports  ·  BiomedCLIP + BM25</p>
+            <p style="color: #a8a8a3;">7-Model Stacking V2  ·  RAG-Enhanced Reports  ·  BiomedCLIP + BM25</p>
+            <p style="color: #f59e0b; font-weight: 600;">""" + DEPRECATION_NOTICE + """</p>
             <p style="color: #5c5c58; font-size: 0.85em; margin-top: 6px;">Targeting FDA 510(k) under measurable-disease IFU (≥10mm). Predicate: Neosoma Brain Mets.</p>
             <div style="display: flex; justify-content: center; gap: 16px; margin-top: 20px; flex-wrap: wrap;">
                 <span style="background: #2d2d2d; color: #a8a8a3; padding: 6px 12px; border-radius: 6px; font-size: 0.8em; border: 1px solid #5c5c58;">Slider: Navigate slices</span>
