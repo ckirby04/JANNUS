@@ -163,3 +163,11 @@ system. **Nothing about the operating point is chosen from it.**
   - The `stacking_cache_v5` files read (84) have their SHA-256 hashes in `results/cached_map_reproduction/provenance.json`. The `mask` key was never read.
   - Conclusion: the stacker is confirmed, and the gate failure lies entirely in today's base-map generation (REPRODUCTION_FAILURE.md, PRIOR_DEFECTS #8 updated).
 - Stopped per instruction. Option 2 not started. No pipeline, adapter, models.yaml or weights.lock change.
+
+## 2026-10-05: CLOSED OUT (superseded by JANNUS 1.60)
+
+- **Owner decision:** retrain, not restore. JANNUS 1.60 is being rebuilt from scratch in `G:\BrainMetShare\1.60` with patient-level locked splits, a single input path and out-of-fold stacker training.
+- This experiment was not completed. No detection result was produced on real data.
+- Wrote CLOSEOUT.md: the findings, the cached-map result, and the modules ready to port.
+- Marked README.md, PLAN.md and the REPORT template (`make_report.py`) as SUPERSEDED.
+- This branch is tagged `audit/1.50-defects` as an audit record and is not merged into main.
