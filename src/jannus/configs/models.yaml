@@ -15,9 +15,9 @@
 #     -> StackingClassifierV2 (~1.36M params), 32^3 sliding window, 0.5 overlap
 #     -> threshold + postprocess -> NIfTI mask
 #
-# Held-out 84-case eval: Dice 0.7858, lesion-wise sens 0.810, FPs/case 1.68.
-# At RANO-BM measurable-disease scope (>=10mm): lesion-wise sens 0.943,
-# matched Dice 0.835. See docs/PRODUCTION.md.
+# Held-out 84-case eval: Dice 0.7858, lesion-wise sens 0.810, FPs/case 1.68. [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
+# At RANO-BM measurable-disease scope (>=10mm): lesion-wise sens 0.943, [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
+# matched Dice 0.835. See docs/PRODUCTION.md. [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 #
 # nnDetection is no longer part of the inference path. The detection-stage
 # config below is preserved only for the legacy detect-then-segment
@@ -148,7 +148,7 @@ models:
     # for the adapter that remaps the 1-channel BTCV stem to our 4-channel input.
     pretrained: "model/pretrained/swin_unetr_btcv.pt"
 
-# Stacking meta-learner — production StackingClassifierV2 (Dice 0.7858)
+# Stacking meta-learner — production StackingClassifierV2 (Dice 0.7858) [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
 stacking:
   classifier_path: "model/stacking_classifier_production.pth"
   in_channels: 9              # 7 predictions + variance + (max - min) range
@@ -163,8 +163,8 @@ inference:
   # THE OPERATING THRESHOLD. Read by BrainMetPipeline via jannus.core.config.
   #
   # v1.50 fix: v1.40 never defined this key, so the pipeline fell through to a
-  # hardcoded 0.5 while every published metric (Dice 0.7858, measurable-disease
-  # sensitivity 0.943) was produced by the evaluation scripts at 0.55. A site
+  # hardcoded 0.5 while every published metric (Dice 0.7858, measurable-disease [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
+  # sensitivity 0.943) was produced by the evaluation scripts at 0.55. A site [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
   # running the documented inference command therefore reproduced neither the
   # config nor the paper. Changing this value invalidates comparison against
   # published results — see docs/CHANGELOG.md.

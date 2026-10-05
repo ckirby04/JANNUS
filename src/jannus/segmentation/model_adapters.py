@@ -19,7 +19,7 @@ The seven base models we ensemble come from different runtimes:
     volume *resampled to 128^3*, with a sliding window at the model's
     native patch size and 0.5 overlap, then upsampled back to the target
     size. Mimicking this exactly preserves the training-distribution match
-    that produced the documented Dice 0.7858.
+    that produced the documented Dice 0.7858. [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
 
 Every base model is wrapped in a `SegmentationModelAdapter` that exposes
 one method:

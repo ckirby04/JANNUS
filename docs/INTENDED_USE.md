@@ -1,3 +1,9 @@
+> ⚠️ **DEPRECATED — DO NOT CITE (added 2026-10-05).** The performance figures in this
+> document are not valid estimates of JANNUS performance. The evaluation cohort
+> overlapped training data, the shipped pipeline does not reproduce these results,
+> and mm-based metrics used incorrect voxel spacing. See tag `audit/1.50-defects`
+> (experiments/lesion_detection/CLOSEOUT.md) for details. Successor: JANNUS 1.60.
+
 # BrainMetScan — Intended Use Statement
 
 **Product Name:** BrainMetScan (segmentation engine: JANNUS v1.4)
@@ -98,39 +104,39 @@ BrainMetScan should **NOT** be used:
 
 ## 9. Performance Summary
 
-All metrics evaluated on **84 held-out cases** from UCSF Brain Metastases. Production model: **JANNUS v1.4 — tuned 7-model V2 stacking classifier** (4 LightweightUNet3D patch variants + nnU-Net 3D + nnU-Net 2D + SwinUNETR, fused by StackingClassifierV2: ~1.36 M parameters with squeeze-excitation attention and a multi-scale branch).
+All metrics evaluated on **84 held-out cases** from UCSF Brain Metastases. Production model: **JANNUS v1.4 — tuned 7-model V2 stacking classifier** (4 LightweightUNet3D patch variants + nnU-Net 3D + nnU-Net 2D + SwinUNETR, fused by StackingClassifierV2: ~1.36 M parameters with squeeze-excitation attention and a multi-scale branch). [INVALID — see PRIOR_DEFECTS #2, #5 in audit/1.50-defects]
 
 ### Whole-volume metrics (any-size lesions)
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| Voxel-wise Dice | 78.6 % | Threshold 0.55, std 0.154 |
-| Voxel-wise Sensitivity | 78.2 % | Whole-volume |
-| Voxel-wise Precision | 80.6 % | Whole-volume |
+| Voxel-wise Dice | 78.6 % | Threshold 0.55, std 0.154 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| Voxel-wise Sensitivity | 78.2 % | Whole-volume [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| Voxel-wise Precision | 80.6 % | Whole-volume [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 | Specificity | 99.99 % | Voxel-level |
-| FPs / case | 1.68 | Lesion-level |
-| Tiny-lesion Dice (<100 vox) | 40.3 % | +8.5 pt over v1.3 baseline |
+| FPs / case | 1.68 | Lesion-level [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| Tiny-lesion Dice (<100 vox) | 40.3 % | +8.5 pt over v1.3 baseline [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 
 ### RANO-BM measurable-disease scope (≥10 mm longest axis) — **submission-scope metrics**
 
 | Metric | Value (95 % CI) | Predicate (Neosoma K252922) | FDA Threshold | Status |
 |---|---|---|---|---|
-| Lesion-wise Sensitivity | **0.943** (0.900 – 0.977) | 0.90 (0.87 – 0.94) | ≥ 0.85 | ✓ exceeds predicate |
-| Lesion-wise Dice (matched) | 0.835 (0.814 – 0.853) | 0.86 (0.83 – 0.89) | ≥ 0.70 | ≈ near predicate |
-| FPs / case | 1.61 (1.19 – 2.05) | 0.57 (0.35 – 0.80) | ≤ 5 | ✓ passes FDA |
-| HD95 (mm) | 17.26 (10.4 – 25.1) | 1.78 (1.02 – 2.54) | ≤ 2.94 | ✗ structural gap (§8.3) |
-| MSD (mm) | 3.89 (2.34 – 5.65) | 0.36 (0.16 – 0.56) | ≤ 0.66 | ✗ structural gap (§8.3) |
-| Cohen's κ (measurable classification) | **0.867** | — | ≥ 0.85 (RANO-BM) | ✓ passes RANO-BM |
-| SoLD relative error | **1.84 %** | — | ≤ 10 % (RANO-BM) | ✓ 5× below threshold |
+| Lesion-wise Sensitivity | **0.943** (0.900 – 0.977) | 0.90 (0.87 – 0.94) | ≥ 0.85 | ✓ exceeds predicate [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| Lesion-wise Dice (matched) | 0.835 (0.814 – 0.853) | 0.86 (0.83 – 0.89) | ≥ 0.70 | ≈ near predicate [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| FPs / case | 1.61 (1.19 – 2.05) | 0.57 (0.35 – 0.80) | ≤ 5 | ✓ passes FDA [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| HD95 (mm) | 17.26 (10.4 – 25.1) | 1.78 (1.02 – 2.54) | ≤ 2.94 | ✗ structural gap (§8.3) [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| MSD (mm) | 3.89 (2.34 – 5.65) | 0.36 (0.16 – 0.56) | ≤ 0.66 | ✗ structural gap (§8.3) [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| Cohen's κ (measurable classification) | **0.867** | — | ≥ 0.85 (RANO-BM) | ✓ passes RANO-BM [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| SoLD relative error | **1.84 %** | — | ≤ 10 % (RANO-BM) | ✓ 5× below threshold [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
 
-All confidence intervals computed via 1000-resample bootstrap on the 84-case held-out cohort.
+All confidence intervals computed via 1000-resample bootstrap on the 84-case held-out cohort. [INVALID — see PRIOR_DEFECTS #2 in audit/1.50-defects]
 
 ### Training Configuration
 
 | | |
 |---|---|
 | Training cases | 566 (Stanford BrainMetShare + UCSF-BMSR), native geometry |
-| Held-out evaluation | 84 cases (subject-level split) |
+| Held-out evaluation | 84 cases (subject-level split) [INVALID — see PRIOR_DEFECTS #2 in audit/1.50-defects] |
 | Stacker training | BCE + (1 − Dice), AdamW lr 3e-4, 5-epoch warmup → cosine, dropout 0.2, weight_decay 1e-4, 3D flip/rotate/intensity augmentation |
 | Inference | Sliding-window 32³ patches, 50 % overlap, threshold 0.55, min_component_size 0 |
 
@@ -142,7 +148,7 @@ BrainMetScan is being developed under the FDA's **predetermined change control p
 
 - **Target classification:** 510(k) Class II under a measurable-disease Indication for Use
 - **Predicate device:** Neosoma Brain Mets — **K252922** (cleared December 2025)
-- **Substantial-equivalence argument:** Same intended use (CADe/CADx for brain metastases on multi-sequence MRI), same imaging modality, same patient population. Differs in scope (BrainMetScan IFU is restricted to measurable disease ≥10 mm vs. Neosoma's broader detection claim) and in performance profile (BrainMetScan exceeds predicate on lesion sensitivity at the measurable-disease scope; trades boundary precision for broader detection coverage). The narrower IFU is the basis for the substantial-equivalence claim under §513(i)(1)(A) of the FD&C Act.
+- **Substantial-equivalence argument:** Same intended use (CADe/CADx for brain metastases on multi-sequence MRI), same imaging modality, same patient population. Differs in scope (BrainMetScan IFU is restricted to measurable disease ≥10 mm vs. Neosoma's broader detection claim) and in performance profile (BrainMetScan exceeds predicate on lesion sensitivity at the measurable-disease scope; trades boundary precision for broader detection coverage). The narrower IFU is the basis for the substantial-equivalence claim under §513(i)(1)(A) of the FD&C Act. [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 - **Quality Management System:** ISO 13485:2016 (in development)
 - **Risk Management:** ISO 14971:2019 (see `docs/risk_analysis.md`)
 - **Software Lifecycle:** IEC 62304:2006+AMD1:2015
@@ -176,4 +182,4 @@ Upon regulatory clearance, BrainMetScan will implement:
 
 ---
 
-**DISCLAIMER:** This document describes the intended future use of BrainMetScan. The software is currently designated **Research Use Only (RUO)** and must not be used for clinical decision-making until FDA clearance is obtained. Performance numbers above represent current internal-validation results on a single-institution held-out cohort and are not yet FDA-substantiated.
+**DISCLAIMER:** This document describes the intended future use of BrainMetScan. The software is currently designated **Research Use Only (RUO)** and must not be used for clinical decision-making until FDA clearance is obtained. Performance numbers above represent current internal-validation results on a single-institution held-out cohort and are not yet FDA-substantiated. [INVALID — see PRIOR_DEFECTS #2, #5 in audit/1.50-defects]

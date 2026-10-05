@@ -1,3 +1,9 @@
+> ⚠️ **DEPRECATED — DO NOT CITE (added 2026-10-05).** The performance figures in this
+> document are not valid estimates of JANNUS performance. The evaluation cohort
+> overlapped training data, the shipped pipeline does not reproduce these results,
+> and mm-based metrics used incorrect voxel spacing. See tag `audit/1.50-defects`
+> (experiments/lesion_detection/CLOSEOUT.md) for details. Successor: JANNUS 1.60.
+
 # JANNUS
 
 **Brain metastasis segmentation on multi-sequence MRI, packaged for multi-site external validation.**
@@ -67,7 +73,7 @@ enforces it regardless of the order entries appear in your config file.
 
 ---
 
-## Performance (internal 84-case held-out cohort)
+## Performance (internal 84-case held-out cohort) [INVALID — see PRIOR_DEFECTS #2 in audit/1.50-defects]
 
 These are **our** numbers on **our** cohort. Your cohort will differ, and that is the
 point of running the validation.
@@ -76,11 +82,11 @@ point of running the validation.
 
 | Metric | Value |
 |---|---|
-| Voxel Dice | 0.7858 |
-| Lesion-wise sensitivity | 0.810 (95% CI 0.758–0.858) |
-| Lesion-wise Dice (matched) | 0.791 |
-| False positives / case | 1.68 (95% CI 1.26–2.12) |
-| HD95 | 18.36 mm (95% CI 12.5–25.0) |
+| Voxel Dice | 0.7858 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| Lesion-wise sensitivity | 0.810 (95% CI 0.758–0.858) [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| Lesion-wise Dice (matched) | 0.791 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| False positives / case | 1.68 (95% CI 1.26–2.12) [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| HD95 | 18.36 mm (95% CI 12.5–25.0) [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
 
 ### RANO-BM measurable disease (longest axis ≥ 10 mm)
 
@@ -88,11 +94,11 @@ This is the scope of the proposed Indication for Use.
 
 | Metric | JANNUS | Neosoma K252922 | FDA threshold |
 |---|---|---|---|
-| Lesion-wise sensitivity | **0.943** (0.90–0.98) | 0.90 | ≥ 0.85 — pass |
-| Lesion-wise Dice (matched) | 0.835 | 0.86 | ≥ 0.70 — pass |
-| False positives / case | 1.61 | 0.57 | ≤ 5 — pass |
-| HD95 | 17.26 mm | 1.78 mm | ≤ 2.94 — **fail** |
-| Mean surface distance | 3.89 mm | 0.36 mm | ≤ 0.66 — **fail** |
+| Lesion-wise sensitivity | **0.943** (0.90–0.98) | 0.90 | ≥ 0.85 — pass [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| Lesion-wise Dice (matched) | 0.835 | 0.86 | ≥ 0.70 — pass [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| False positives / case | 1.61 | 0.57 | ≤ 5 — pass [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| HD95 | 17.26 mm | 1.78 mm | ≤ 2.94 — **fail** [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| Mean surface distance | 3.89 mm | 0.36 mm | ≤ 0.66 — **fail** [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
 
 HD95 and MSD are the outstanding gaps and are stated plainly rather than omitted. They
 are dominated by isolated false-positive components far from any true lesion; see
@@ -102,11 +108,11 @@ are dominated by isolated false-positive components far from any true lesion; se
 
 | Longest axis | GT lesions | Sensitivity | FP/case | Mean Dice |
 |---|---|---|---|---|
-| < 3 mm | 33 | 0.061 | 0.54 | 0.53 |
-| 3–5 mm | 82 | 0.439 | 0.54 | 0.64 |
-| 5–10 mm | 304 | 0.773 | 0.46 | 0.72 |
-| 10–20 mm | 144 | **0.903** | 0.12 | 0.81 |
-| > 20 mm | 73 | **0.986** | 0.02 | 0.87 |
+| < 3 mm | 33 | 0.061 | 0.54 | 0.53 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| 3–5 mm | 82 | 0.439 | 0.54 | 0.64 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| 5–10 mm | 304 | 0.773 | 0.46 | 0.72 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| 10–20 mm | 144 | **0.903** | 0.12 | 0.81 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| > 20 mm | 73 | **0.986** | 0.02 | 0.87 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
 
 Below 3 mm the model is at the floor of MRI resolution and inter-annotator agreement.
 Do not read the sub-3 mm row as a performance claim.

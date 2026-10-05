@@ -14,7 +14,7 @@ and required for a 510(k) submission under 21 CFR 892.2050:
     8. Bootstrap 95% CI on any per-case metric
     9. Stratified sens/FPR/DSC by lesion-size bin (<3mm, 3-5, 5-10, 10-20, >20mm)
 
-Assumes 1mm isotropic voxels (true for the 84 held-out eval cases at 256^3).
+Assumes 1mm isotropic voxels (true for the 84 held-out eval cases at 256^3). [INVALID — see PRIOR_DEFECTS #2 in audit/1.50-defects]
 If you run this on data with different spacing, pass a `spacing` tuple.
 """
 

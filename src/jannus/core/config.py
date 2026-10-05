@@ -32,7 +32,7 @@ import yaml
 from .errors import ConfigError
 
 #: The binarisation threshold used to produce every published JANNUS metric
-#: (Dice 0.7858, lesion sensitivity 0.810, RANO-BM >=10mm sensitivity 0.943).
+#: (Dice 0.7858, lesion sensitivity 0.810, RANO-BM >=10mm sensitivity 0.943). [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 #:
 #: HISTORICAL DEFECT — v1.40 and earlier: `configs/models.yaml` never defined
 #: `inference.threshold`, so `BrainMetPipeline` fell through to a hardcoded

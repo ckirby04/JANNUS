@@ -1,3 +1,9 @@
+> ⚠️ **DEPRECATED — DO NOT CITE (added 2026-10-05).** The performance figures in this
+> document are not valid estimates of JANNUS performance. The evaluation cohort
+> overlapped training data, the shipped pipeline does not reproduce these results,
+> and mm-based metrics used incorrect voxel spacing. See tag `audit/1.50-defects`
+> (experiments/lesion_detection/CLOSEOUT.md) for details. Successor: JANNUS 1.60.
+
 # Stacking Architecture Exploration — Final Report
 
 **Date:** 2026-04-24
@@ -6,7 +12,7 @@ why it was abandoned, and the confirmed conclusion that the stacker architecture
 is at its ceiling.
 
 **Production champion:** `model/stacking_v5_seven_model_classifier.pth` — tuned
-7-model V2, Dice 0.7858. All other architectures were either worse overall
+7-model V2, Dice 0.7858. All other architectures were either worse overall [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
 or worse on critical FDA metrics (HD95, MSD).
 
 ---
@@ -15,7 +21,7 @@ or worse on critical FDA metrics (HD95, MSD).
 
 - **Held-out set:** 84 BMS/UCSF MRI cases, 256³ isotropic 1mm
 - **Metrics:** aggregate voxel Dice; per-bucket Dice by lesion volume; lesion-wise sensitivity / FPs-per-case / lesion-wise Dice (matched + BraTS-style) / HD95 / MSD with 1000-resample bootstrap 95% CIs
-- **Comparison reference:** Old 6-model stacker (v4) at Dice 0.7778 (legacy production); Neosoma Brain Mets 510(k) K252922 as external competitive benchmark
+- **Comparison reference:** Old 6-model stacker (v4) at Dice 0.7778 (legacy production); Neosoma Brain Mets 510(k) K252922 as external competitive benchmark [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
 - **Postprocessing:** `min_component_size = 0` (locked on 2026-04-19 after size-sweep experiment)
 
 All stackers are trained on ~430 non-eval cases from the legacy-format 256³ cache,
@@ -138,27 +144,27 @@ regress, not improve.
 
 | Metric | v4 Old 6-model | **Tuned 7-model V2** |
 |---|---|---|
-| Dice | 0.7778 | **0.7858** (+0.008) |
+| Dice | 0.7778 | **0.7858** (+0.008) [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 | Precision | 0.8050 | **0.8063** (+0.001) |
 | Sensitivity | 0.7848 | 0.7823 (−0.003) |
 | Tiny (<100 vox) | 0.3182 | **0.4028** (+0.085) |
 | Small (100-1k) | 0.7173 | **0.7334** (+0.016) |
 | Medium (1k-10k) | 0.8467 | **0.8547** (+0.008) |
 | Large (>10k) | 0.8706 | 0.8735 (+0.003) |
-| Lesion-wise Sens | — | 0.810 |
-| FPs/case | — | **1.68** |
-| HD95 (mm) | — | **18.36** |
-| Lesion-wise Dice | — | 0.791 |
+| Lesion-wise Sens | — | 0.810 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| FPs/case | — | **1.68** [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| HD95 (mm) | — | **18.36** [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| Lesion-wise Dice | — | 0.791 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 
 **Cross-scope clinical metrics (at ≥10mm measurable-disease scope):**
-- Lesion-wise Sens **0.943** — exceeds Neosoma's 0.90
-- Matched Dice **0.835** — near Neosoma's 0.86
-- Cohen's κ **0.867** — passes RANO-BM ≥0.85
-- SoLD error **1.84%** — beats RANO-BM ≤10% by 5×
+- Lesion-wise Sens **0.943** — exceeds Neosoma's 0.90 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
+- Matched Dice **0.835** — near Neosoma's 0.86 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
+- Cohen's κ **0.867** — passes RANO-BM ≥0.85 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
+- SoLD error **1.84%** — beats RANO-BM ≤10% by 5× [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 
 **Why this is the champion:** Best overall Dice, best precision, beats old 6-model
 on every size bucket, lowest FPs/case of any multi-base configuration. First config
-to achieve Neosoma-competitive numbers on measurable-disease scope.
+to achieve Neosoma-competitive numbers on measurable-disease scope. [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 
 **Checkpoint (KEPT):** `model/stacking_v5_seven_model_classifier.pth` (5.5 MB)
 
@@ -177,11 +183,11 @@ the ensemble.
 
 | Metric | 7-model (champion) | 6-model (no patch_8) |
 |---|---|---|
-| Dice | 0.7858 | 0.7808 (−0.005) |
+| Dice | 0.7858 | 0.7808 (−0.005) [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 | Tiny bucket | 0.4028 | **0.4222** (+0.019) |
 | Small bucket | 0.7334 | **0.7491** (+0.016) |
-| HD95 (mm) | 18.36 | **21.72** (+3.4, WORSE) |
-| FPs/case | 1.68 | **2.44** (+0.76, WORSE) |
+| HD95 (mm) | 18.36 | **21.72** (+3.4, WORSE) [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| FPs/case | 1.68 | **2.44** (+0.76, WORSE) [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 
 **Why not champion:** Dropping patch_8 improved tiny/small-lesion Dice by 0.02
 (patch_8's FPs were drowning small real lesions), but HD95 got **worse** and
@@ -220,12 +226,12 @@ ensemble integration.
 
 | Metric | 7-model (champion) | 8-model (+ swin_precision) |
 |---|---|---|
-| Dice | 0.7858 | 0.7693 (−0.017) |
+| Dice | 0.7858 | 0.7693 (−0.017) [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 | Tiny bucket | 0.4028 | **0.4339** (+0.031) |
 | Sensitivity | 0.7823 | 0.7764 |
 | Precision | 0.8063 | 0.7792 (−0.027) |
-| HD95 (mm) | 18.36 | **24.02** (+5.7, WORSE) |
-| FPs/case | 1.68 | **4.42** (+2.74, WORSE) |
+| HD95 (mm) | 18.36 | **24.02** (+5.7, WORSE) [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| FPs/case | 1.68 | **4.42** (+2.74, WORSE) [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 
 **Why not champion:** Adding a precision-trained base made precision *worse*.
 Counterintuitive, but traceable: swin_precision over-suppressed small lesions
@@ -260,10 +266,10 @@ the stacker with 30% of patches centered on mined FPs (forcing the stacker to le
 
 | Metric | 7-model (champion) | Hard-neg 7-model |
 |---|---|---|
-| Dice | 0.7858 | 0.7802 (−0.006) |
+| Dice | 0.7858 | 0.7802 (−0.006) [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 | Tiny bucket | 0.4028 | 0.3846 (−0.018) |
-| HD95 (mm) | 18.36 | 20.46 (+2.1) |
-| FPs/case | 1.68 | 1.87 (+0.19) |
+| HD95 (mm) | 18.36 | 20.46 (+2.1) [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| FPs/case | 1.68 | 1.87 (+0.19) [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 
 **Why not champion:** All metrics regressed. The stacker's best val was saved
 at epoch 4 (slightly worse than the warm-start baseline) and never recovered.
@@ -294,11 +300,11 @@ Retrain the tuned 7-model V2 on the "cleaned" labels.
 
 | Metric | 7-model (champion) | Pseudo-cleaned 7-model |
 |---|---|---|
-| Dice | 0.7858 | 0.7761 (−0.010) |
+| Dice | 0.7858 | 0.7761 (−0.010) [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 | Precision | 0.8063 | 0.7925 (−0.014) |
 | Tiny bucket | 0.4028 | 0.4008 |
-| HD95 (mm) | 18.36 | 20.43 (+2.1) |
-| FPs/case | 1.68 | 2.13 (+0.45) |
+| HD95 (mm) | 18.36 | 20.43 (+2.1) [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| FPs/case | 1.68 | 2.13 (+0.45) [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
 
 **Why not champion:** Inspection of the auto-cleaned masks showed they were
 systematically **smaller** than originals (e.g., BMS_Mets_311: GT 13,915 fg → new
@@ -323,17 +329,17 @@ are the only real label-quality lever.
 ```
 Config                            Dice      Δ vs champion    Status
 ------------------------------------------------------------------
-Tuned 7-model V2 (CHAMPION)       0.7858    —                production
+Tuned 7-model V2 (CHAMPION)       0.7858    —                production [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
 6-model (no patch_8)              0.7808    -0.005           removed
 Hard-neg 7-model                  0.7802    -0.006           removed
 Pseudo-cleaned 7-model            0.7761    -0.010           removed
 v2 single (hybrid 3-model)        0.7744    -0.011           preserved*
-Old 6-model (v4)                  0.7778    -0.008           legacy
+Old 6-model (v4)                  0.7778    -0.008           legacy [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
 8-model (+swin_precision)         0.7693    -0.017           removed
 7-model V2 stock (untuned)        0.7629    -0.023           historical
 2-layer conv meta                 0.7531    -0.033           removed
 2-layer MLP meta                  0.7237    -0.062           removed
-v1 uniform-256 hybrid (broken)    0.6453    -0.141           abandoned
+v1 uniform-256 hybrid (broken)    0.6453    -0.141           abandoned [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
 ```
 
 \* v2 hybrid single stacker checkpoint is kept because it has best tiny-bucket
@@ -342,7 +348,7 @@ tiny-specialist vs overall generalist" tradeoff.
 
 **The stacker architecture is at its ceiling on this data.** Everything in
 `Stacking v2 → v2-tuned` space has been explored; diminishing returns are
-clear. The remaining FDA gap (HD95 18.36mm vs ≤2.94mm) is not addressable at
+clear. The remaining FDA gap (HD95 18.36mm vs ≤2.94mm) is not addressable at [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 the stacker level — it requires either:
 
 1. **Per-base precision retraining** with boundary losses (~2-3 weeks, moderate
@@ -350,7 +356,7 @@ the stacker level — it requires either:
 2. **Additional imaging modalities** (DWI/ADC) as input channels — the single
    highest-ROI signal-level intervention.
 3. **IFU scoping** to ≥10mm ("measurable disease") — the **current submission-path
-   recommendation**, as numbers are already Neosoma-competitive at that scope.
+   recommendation**, as numbers are already Neosoma-competitive at that scope. [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 
 ## Cleanup executed on 2026-04-24
 

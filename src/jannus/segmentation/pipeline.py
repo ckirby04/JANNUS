@@ -35,9 +35,9 @@ This faithfully replicates the cache-build protocol from
 1.30/scripts/training/native_overnight.py — the same protocol used to
 produce the predictions the production stacker was trained against.
 
-Headline metrics (held-out 84-case eval; see docs/PRODUCTION.md):
-    voxel Dice 0.7858, lesion-wise sens 0.810, FPs/case 1.68
-    RANO-BM measurable-disease (>=10mm): sens 0.943, matched Dice 0.835
+Headline metrics (held-out 84-case eval; see docs/PRODUCTION.md): [INVALID — see PRIOR_DEFECTS #2 in audit/1.50-defects]
+    voxel Dice 0.7858, lesion-wise sens 0.810, FPs/case 1.68 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
+    RANO-BM measurable-disease (>=10mm): sens 0.943, matched Dice 0.835 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 
 Design notes
 ------------

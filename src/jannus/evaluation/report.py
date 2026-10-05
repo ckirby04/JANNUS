@@ -12,17 +12,17 @@ from typing import Any
 
 from .harness import MEASURABLE_DISEASE_MM, CohortResult
 
-#: Published JANNUS figures on the 84-case internal held-out cohort. Shown
+#: Published JANNUS figures on the 84-case internal held-out cohort. Shown [INVALID — see PRIOR_DEFECTS #2 in audit/1.50-defects]
 #: beside a site's numbers purely as a reference point — a site whose numbers
 #: differ has not necessarily done anything wrong, since cohort difficulty,
 #: annotation style and acquisition protocol all move these.
 REFERENCE_INTERNAL = {
-    "voxel_dice": 0.7858,
-    "lesion_sensitivity_all": 0.810,
-    "fp_per_case_all": 1.68,
-    "lesion_sensitivity_measurable": 0.943,
-    "lesion_dice_measurable": 0.835,
-    "hd95_measurable": 17.26,
+    "voxel_dice": 0.7858,  # [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
+    "lesion_sensitivity_all": 0.810,  # [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
+    "fp_per_case_all": 1.68,  # [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
+    "lesion_sensitivity_measurable": 0.943,  # [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
+    "lesion_dice_measurable": 0.835,  # [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
+    "hd95_measurable": 17.26,  # [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 }
 
 #: Cleared predicate device, for context in the measurable-disease scope.
@@ -73,7 +73,7 @@ def render_text_summary(result: CohortResult) -> str:
         f"  lesion Dice(matched) {_ci(result.aggregate_measurable.get('lesion_wise_dice_matched', {}))}",
         f"  HD95 (mm)            {_ci(result.aggregate_measurable.get('hd95_mm', {}), 2)}",
         "",
-        "Reference (internal 84-case held-out):",
+        "Reference (internal 84-case held-out):",  # [INVALID — see PRIOR_DEFECTS #2 in audit/1.50-defects]
         f"  voxel Dice {REFERENCE_INTERNAL['voxel_dice']:.4f}   "
         f"measurable sensitivity {REFERENCE_INTERNAL['lesion_sensitivity_measurable']:.3f}",
     ]

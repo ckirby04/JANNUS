@@ -11,7 +11,7 @@ Reporting scopes
 ``all``          every annotated lesion, including sub-resolution ones.
 ``measurable``   RANO-BM measurable disease: longest axis >= 10 mm. This is the
                  scope of the proposed Indication for Use, and the scope on
-                 which JANNUS is competitive with the cleared predicate.
+                 which JANNUS is competitive with the cleared predicate. [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 
 Both are always reported. Reporting only the favourable scope would be
 misleading, and a validation site should see the full picture.

@@ -783,12 +783,12 @@ def load_stacking_model_cached():
         _model_info['stacking'] = True
         _model_info['num_models'] = len(STACKING_MODEL_NAMES)
         _model_info['model_names'] = list(STACKING_MODEL_NAMES)
-        _model_info['val_dice'] = 0.7858
+        _model_info['val_dice'] = 0.7858  # [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
         _model_info['epoch'] = 'stacking_v5_seven_model_v2'
 
         print(f"Stacking classifier loaded: {len(STACKING_MODEL_NAMES)} base models (v1.4 V2)")
         print(f"Models: {STACKING_MODEL_NAMES}")
-        print(f"Stacking Dice: 0.7858 (RANO-BM @≥10mm: Sens 0.943 vs Neosoma 0.90)")
+        print(f"Stacking Dice: 0.7858 (RANO-BM @≥10mm: Sens 0.943 vs Neosoma 0.90)")  # [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
         print(f"Threshold: {STACKING_THRESHOLD}")
         print(f"Using preprocessed data from: {DATA_DIR}")
         print("=" * 50)

@@ -11,7 +11,7 @@ Production model (loaded by `src/segmentation/pipeline.py` and
                     SwinUNETR 150ep+]
     in_channels  = 9   (7 predictions + variance + range)
     checkpoint   = model/stacking_classifier_production.pth
-    val Dice     = 0.7858 on 84-case held-out
+    val Dice     = 0.7858 on 84-case held-out [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
 
 Legacy (kept for back-compat): StackingClassifier (~25K params), 3 bases,
 5-channel input, checkpoint model/stacking_v5_classifier.pth — Variant 1

@@ -1,3 +1,9 @@
+> ⚠️ **DEPRECATED — DO NOT CITE (added 2026-10-05).** The performance figures in this
+> document are not valid estimates of JANNUS performance. The evaluation cohort
+> overlapped training data, the shipped pipeline does not reproduce these results,
+> and mm-based metrics used incorrect voxel spacing. See tag `audit/1.50-defects`
+> (experiments/lesion_detection/CLOSEOUT.md) for details. Successor: JANNUS 1.60.
+
 # Model card — JANNUS 1.50
 
 Following the model-card conventions of Mitchell et al. (2019), adapted for a medical
@@ -67,7 +73,7 @@ matters.
 
 ## Evaluation data
 
-84-case held-out cohort, disjoint from training at the patient level.
+84-case held-out cohort, disjoint from training at the patient level. [INVALID — see PRIOR_DEFECTS #2 in audit/1.50-defects]
 
 Confidence intervals are 1000-resample bootstrap over per-case values. Lesion matching is
 greedy by IoU with a 0.1 threshold — deliberately permissive, because for a 4 mm
@@ -82,25 +88,25 @@ measures detection.
 
 | Metric | Value (95% CI) |
 |---|---|
-| Voxel Dice | 0.7858 |
-| Lesion-wise sensitivity | 0.810 (0.758–0.858) |
-| Lesion-wise Dice (matched) | 0.791 |
-| Precision | 0.806 |
-| False positives / case | 1.68 (1.26–2.12) |
-| HD95 | 18.36 mm (12.5–25.0) |
-| Mean surface distance | 3.53 mm (2.5–4.9) |
+| Voxel Dice | 0.7858 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| Lesion-wise sensitivity | 0.810 (0.758–0.858) [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| Lesion-wise Dice (matched) | 0.791 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| Precision | 0.806 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| False positives / case | 1.68 (1.26–2.12) [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| HD95 | 18.36 mm (12.5–25.0) [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| Mean surface distance | 3.53 mm (2.5–4.9) [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
 
 ### RANO-BM measurable disease (≥ 10 mm)
 
 | Metric | JANNUS | Neosoma K252922 | FDA threshold | Result |
 |---|---|---|---|---|
-| Lesion-wise sensitivity | **0.943** (0.90–0.98) | 0.90 | ≥ 0.85 | pass |
-| Lesion-wise Dice (matched) | 0.835 | 0.86 | ≥ 0.70 | pass |
-| False positives / case | 1.61 | 0.57 | ≤ 5 | pass |
-| HD95 | 17.26 mm | 1.78 mm | ≤ 2.94 mm | **fail** |
-| Mean surface distance | 3.89 mm | 0.36 mm | ≤ 0.66 mm | **fail** |
-| Cohen's κ (measurable classification) | **0.867** | n/r | ≥ 0.85 | pass |
-| SoLD relative error | **1.84 %** | n/r | ≤ 10 % | pass |
+| Lesion-wise sensitivity | **0.943** (0.90–0.98) | 0.90 | ≥ 0.85 | pass [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| Lesion-wise Dice (matched) | 0.835 | 0.86 | ≥ 0.70 | pass [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| False positives / case | 1.61 | 0.57 | ≤ 5 | pass [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| HD95 | 17.26 mm | 1.78 mm | ≤ 2.94 mm | **fail** [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| Mean surface distance | 3.89 mm | 0.36 mm | ≤ 0.66 mm | **fail** [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| Cohen's κ (measurable classification) | **0.867** | n/r | ≥ 0.85 | pass [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| SoLD relative error | **1.84 %** | n/r | ≤ 10 % | pass [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
 
 Predicate values are as published for that device on its own cohort. This is context, not
 a paired comparison — no head-to-head study has been run.
@@ -109,11 +115,11 @@ a paired comparison — no head-to-head study has been run.
 
 | Longest axis | GT lesions | Sensitivity | FP/case | Mean Dice |
 |---|---|---|---|---|
-| < 3 mm | 33 | 0.061 | 0.54 | 0.53 |
-| 3–5 mm | 82 | 0.439 | 0.54 | 0.64 |
-| 5–10 mm | 304 | 0.773 | 0.46 | 0.72 |
-| 10–20 mm | 144 | 0.903 | 0.12 | 0.81 |
-| > 20 mm | 73 | 0.986 | 0.02 | 0.87 |
+| < 3 mm | 33 | 0.061 | 0.54 | 0.53 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| 3–5 mm | 82 | 0.439 | 0.54 | 0.64 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| 5–10 mm | 304 | 0.773 | 0.46 | 0.72 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| 10–20 mm | 144 | 0.903 | 0.12 | 0.81 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| > 20 mm | 73 | 0.986 | 0.02 | 0.87 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
 
 Performance is strongly size-dependent. **Any headline sensitivity figure is really a
 statement about the lesion-size distribution of the cohort it was measured on.** Compare
@@ -133,7 +139,7 @@ additional input channels) or consensus radiologist re-annotation — both data-
 investments. Eleven stacker configurations across seven rounds did not move it; see
 `docs/research/stacking_architectures_explored.md`.
 
-**Sub-3 mm sensitivity is 0.061** — effectively zero. This is at the floor of MRI
+**Sub-3 mm sensitivity is 0.061** — effectively zero. This is at the floor of MRI [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 resolution and inter-annotator agreement, and is why the proposed IFU scopes to ≥ 10 mm.
 
 **Single-reader ground truth.** The development cohort was not consensus-annotated, so
@@ -143,7 +149,7 @@ is established.
 **nnU-Net 2D uses fold 0 only.** Folds 1–4 stopped early without a final checkpoint, so
 that base model is weaker than a full 5-fold ensemble would be.
 
-**No prospective validation.** All results are retrospective on a single held-out cohort.
+**No prospective validation.** All results are retrospective on a single held-out cohort. [INVALID — see PRIOR_DEFECTS #2 in audit/1.50-defects]
 
 **Demographic performance is uncharacterised.** No subgroup analysis by age, sex, race,
 ethnicity or primary cancer type has been performed, so differential performance across
@@ -160,7 +166,7 @@ and timing differences move enhancement and therefore sensitivity.
 A false negative in this task means a missed metastasis. Whatever the aggregate metrics
 say, the model must not be used to rule out disease, and its output requires radiologist
 review. False positives carry a real cost too — unnecessary follow-up imaging, patient
-anxiety, and at 1.68 per case they are frequent enough to matter for workflow.
+anxiety, and at 1.68 per case they are frequent enough to matter for workflow. [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects]
 
 Because no demographic subgroup analysis exists, equitable performance across patient
 populations cannot currently be claimed.

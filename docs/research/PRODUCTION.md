@@ -1,3 +1,9 @@
+> ⚠️ **DEPRECATED — DO NOT CITE (added 2026-10-05).** The performance figures in this
+> document are not valid estimates of JANNUS performance. The evaluation cohort
+> overlapped training data, the shipped pipeline does not reproduce these results,
+> and mm-based metrics used incorrect voxel spacing. See tag `audit/1.50-defects`
+> (experiments/lesion_detection/CLOSEOUT.md) for details. Successor: JANNUS 1.60.
+
 # BrainMetScan — Production Model
 
 **Production checkpoint:** `model/stacking_classifier_production.pth`
@@ -18,29 +24,29 @@ bottleneck + wider/deeper trunk (mid_channels=64, 4 residual blocks) +
 multi-scale branch (avg-pool → 2 res blocks → trilinear upsample → concat → fuse)
 + Squeeze-Excitation channel attention. See `src/segmentation/stacking.py`.
 
-## Headline performance (84-case held-out eval)
+## Headline performance (84-case held-out eval) [INVALID — see PRIOR_DEFECTS #2 in audit/1.50-defects]
 
 ### Overall (all lesions)
 
 | Metric | Value | Old 6-model (legacy) |
 |---|---|---|
-| Voxel Dice | **0.7858** | 0.7778 |
-| Lesion-wise Sensitivity | 0.810 (95% CI 0.758-0.858) | — |
-| Lesion-wise Dice (matched) | 0.791 | — |
-| Precision | 0.806 | 0.805 |
-| FPs / case | 1.68 (95% CI 1.26-2.12) | — |
-| HD95 (mm) | 18.36 (95% CI 12.5-25.0) | — |
-| MSD (mm) | 3.53 (95% CI 2.5-4.9) | — |
+| Voxel Dice | **0.7858** | 0.7778 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| Lesion-wise Sensitivity | 0.810 (95% CI 0.758-0.858) | — [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| Lesion-wise Dice (matched) | 0.791 | — [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| Precision | 0.806 | 0.805 [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| FPs / case | 1.68 (95% CI 1.26-2.12) | — [INVALID — see PRIOR_DEFECTS #2, #3, #8 in audit/1.50-defects] |
+| HD95 (mm) | 18.36 (95% CI 12.5-25.0) | — [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| MSD (mm) | 3.53 (95% CI 2.5-4.9) | — [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
 
 ### Stratified by lesion size (longest axis)
 
 | Bin | n GT | Sensitivity | FPs/case | Mean DSC |
 |---|---|---|---|---|
-| <3mm | 33 | **0.061** | 0.54 | 0.53 |
-| 3-5mm | 82 | 0.439 | 0.54 | 0.64 |
-| 5-10mm | 304 | 0.773 | 0.46 | 0.72 |
-| 10-20mm | 144 | **0.903** | 0.12 | 0.81 |
-| >20mm | 73 | **0.986** | 0.02 | 0.87 |
+| <3mm | 33 | **0.061** | 0.54 | 0.53 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| 3-5mm | 82 | 0.439 | 0.54 | 0.64 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| 5-10mm | 304 | 0.773 | 0.46 | 0.72 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| 10-20mm | 144 | **0.903** | 0.12 | 0.81 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| >20mm | 73 | **0.986** | 0.02 | 0.87 [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
 
 The model is effectively blind below 3mm (intersection of MRI resolution + annotator
 disagreement) and exceeds FDA-passing sensitivity from 10mm up.
@@ -49,15 +55,15 @@ disagreement) and exceeds FDA-passing sensitivity from 10mm up.
 
 | Metric | BMS production | Neosoma K252922 | FDA threshold |
 |---|---|---|---|
-| Lesion-wise Sensitivity | **0.943** (0.90-0.98) | 0.90 | ≥ 0.85 ✓ |
-| Lesion-wise Dice (matched) | 0.835 | 0.86 | ≥ 0.70 ✓ |
-| FPs / case | 1.61 | 0.57 | ≤ 5 ✓ |
-| HD95 (mm) | 17.26 | 1.78 | ≤ 2.94 ✗ |
-| MSD (mm) | 3.89 | 0.36 | ≤ 0.66 ✗ |
-| Cohen's κ (measurable classification) | **0.867** | not reported | ≥ 0.85 ✓ (RANO-BM) |
-| SoLD relative error | **1.84%** | not reported | ≤ 10% ✓ (RANO-BM) |
+| Lesion-wise Sensitivity | **0.943** (0.90-0.98) | 0.90 | ≥ 0.85 ✓ [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| Lesion-wise Dice (matched) | 0.835 | 0.86 | ≥ 0.70 ✓ [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| FPs / case | 1.61 | 0.57 | ≤ 5 ✓ [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| HD95 (mm) | 17.26 | 1.78 | ≤ 2.94 ✗ [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| MSD (mm) | 3.89 | 0.36 | ≤ 0.66 ✗ [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| Cohen's κ (measurable classification) | **0.867** | not reported | ≥ 0.85 ✓ (RANO-BM) [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
+| SoLD relative error | **1.84%** | not reported | ≤ 10% ✓ (RANO-BM) [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects] |
 
-**At ≥10mm scope, BMS exceeds Neosoma on lesion-wise sensitivity and matches on
+**At ≥10mm scope, BMS exceeds Neosoma on lesion-wise sensitivity and matches on [INVALID — see PRIOR_DEFECTS #1, #2, #3, #8 in audit/1.50-defects]
 Dice. Cohen's kappa and SoLD error pass RANO-BM targets. HD95/MSD are the only
 remaining FDA-failing metrics; both improve from the all-lesions case.**
 
