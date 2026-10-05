@@ -1,0 +1,15 @@
+# SECONDARY (D5): evaluate fold A once with choices frozen on fold B.
+name: secondary_tuneB_testA
+frozen: experiments/lesion_detection/configs/frozen/secondary_tuneB.yaml
+components_config: experiments/lesion_detection/configs/components.yaml
+test_split: experiments/lesion_detection/configs/splits/fold_A_ids.txt
+test_label: "fold A (mixed clean/contaminated; secondary sensitivity analysis)"
+strata: []
+baseline: {connectivity: 26, voxel_threshold: 0.55, rule: overlap, scorer: max_prob, min_esd_mm: 0.0}
+fp_targets: [0.5, 1.0, 2.0, 3.0]
+secondary_rules: []
+connectivity_sensitivity: 6
+bootstrap: {n_resamples: 2000, seed: 20261004, ci: 0.95}
+fp_characterization: {distance_bands_mm: [0, 5, 20, 50, .inf]}
+segmentation: {enabled: false}
+results_dir: experiments/lesion_detection/results

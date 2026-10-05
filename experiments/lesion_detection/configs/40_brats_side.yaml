@@ -1,0 +1,9 @@
+# Supplementary (D7): detection status under original vs BraTS-METS-revised annotation,
+# at the FROZEN primary operating points and the 0.55 baseline. Never used for selection.
+frozen: experiments/lesion_detection/configs/frozen/primary.yaml
+components_config: experiments/lesion_detection/configs/components.yaml
+cases: experiments/lesion_detection/configs/splits/eval84_ids.txt     # UCSF scans with a BraTS-seg file
+clean_split: experiments/lesion_detection/configs/splits/clean_ids.txt
+baseline_voxel_threshold: 0.55
+workers: 6
+output_dir: experiments/lesion_detection/results/brats_side_analysis

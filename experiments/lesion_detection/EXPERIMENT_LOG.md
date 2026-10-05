@@ -58,3 +58,43 @@ threshold 0.55, prior JANNUS metrics). 0.943 is sensitivity for **lesions ≥10 
   - The two sources that cannot be checked (patch-model training sets and synthetic BMS provenance) are recorded in D5.1. The owner will supply what is known.
 - **Q7.** No per-case production-stacker file can exist; the scripts write aggregates only. The aggregate gate is in use (D8). No frozen file was opened.
 - Wrote LEAKAGE_FINDING.md and PRIOR_DEFECTS.md (an index of 6 defects in existing code, data and docs). No existing doc was edited.
+
+## 2026-10-04: Phases 2–4 tooling; inference; REPRODUCTION GATE FAILED (stopped)
+
+- Phase 2 committed as `6a1d251`: scorers, provenance helper, inference wrapper, gate script.
+- Written and unit-tested, but **not yet run on real data**:
+  - `detection/metrics.py`, `bootstrap.py`, `report.py` (13 tests);
+  - experiment drivers: `build_components.py`, `select_operating_point.py`, `evaluate.py`, `pool_2fold.py`, `brats_side_analysis.py`, `make_report.py`, `tools/make_2fold.py`;
+  - DECISIONS D9–D15;
+  - PRIOR_DEFECTS #7: `jannus predict` provenance omits the nnU-Net hashes.
+- **Inference.**
+  - Split: all 84; contaminated first, then clean.
+  - `run_inference.py` ran the unchanged `BrainMetPipeline.from_config(verify=True)` on `Data/preprocessed_256/train` inputs through `load_case`, the same path as `jannus predict`.
+  - 84/84 cases at about 55 s each, 4–7 MiB per map.
+  - The manifest and provenance are in `results/inference/`.
+- **Reproduction gate.**
+  - Split: all 84. Labels were used only to compare against the logged aggregates; nothing was selected.
+  - Conventions: the original `seven_model_stacker.py` ones (`p > 0.55`, 1 mm spacing, 6-connectivity, IoU ≥ 0.1).
+  - Result: **FAILED** on every check.
+
+  | Check | Logged | Observed | Δ |
+  |---|---|---|---|
+  | mean voxel Dice | 0.7858 | 0.6093 | −0.1765 |
+  | mean lesion sensitivity | 0.810 | 0.5630 | −0.2470 |
+  | total FPs | 141 | 223 | +82 |
+  | matched lesion Dice | 0.791 | 0.7143 | −0.0767 |
+
+  - Per the pre-declared protocol (D8): stop and report. **No debugging against these labels.** The contaminated-split component build was stopped. No detection results were computed or read.
+- **Label-free diagnostic** (tuning split only, predictions only, no GT). Per-model median voxels ≥ 0.5 per scan:
+
+  | Model | Median voxels ≥ 0.5 | Dice vs majority of the other 6 |
+  |---|---|---|
+  | nnunet_3d | 2,245 | 0.685 |
+  | nnunet_2d | 870 | 0.296 |
+  | patch_8 | **141,189** | **0.022** |
+  | patch_12 | **40,486** | **0.123** |
+  | patch_24 | 3,427 | 0.533 |
+  | patch_36 | 2,371 | 0.717 |
+  | swin_unetr | 3,440 | 0.679 |
+
+  `patch_8` and `patch_12` flag one to two orders of magnitude more voxels than the other models, and agree with almost none of them. This is consistent with the regenerated base maps differing from the cache the stacker was trained on (1.30 "cache-build protocol", `model/stacking_cache_v5*`), most visibly for the small-patch models. Whether that is their normal behaviour (and the stacker learned to discount it) cannot be decided without the original cache. Not investigated further, pending the owner.

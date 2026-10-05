@@ -1,0 +1,17 @@
+# PRIMARY selection (D5.1, D6). Tuning split = the 55 contaminated scans ONLY.
+name: primary
+components_config: experiments/lesion_detection/configs/components.yaml
+tune_split: experiments/lesion_detection/configs/splits/contaminated_ids.txt
+must_be_disjoint_from:            # selection refuses to run if the tuning split touches these
+  - experiments/lesion_detection/configs/splits/clean_ids.txt
+grid:
+  connectivity: 26
+  rule: overlap
+  voxel_thresholds: [0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70]
+  scorers: [max_prob, mean_prob, agreement, inv_variance]   # list order = final tie-break (D6)
+fp_targets: [0.5, 1.0, 2.0, 3.0]
+filtering:                         # optional min-size filter (D12); selected separately, reported as an effect
+  enabled: true
+  min_esd_mm: [0.0, 1.0, 2.0, 3.0]
+frozen_out: experiments/lesion_detection/configs/frozen/primary.yaml
+results_dir: experiments/lesion_detection/results/select_primary

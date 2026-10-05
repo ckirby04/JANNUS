@@ -1,2 +1,8 @@
 # Large intermediates: probability maps and component tables. Regenerable; never commit.
 cache/
+
+# The root .gitignore excludes every provenance.json (site outputs can carry identifiers).
+# This experiment's provenance records only public dataset IDs, hashes and environment info,
+# and the brief requires it to be committed with each result.
+!results/**/provenance.json
+!results/**/REPORT.md

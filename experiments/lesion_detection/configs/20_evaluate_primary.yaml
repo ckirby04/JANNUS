@@ -1,0 +1,27 @@
+# PRIMARY test evaluation (D5.1). Runs ONCE on the 29 clean scans with choices frozen
+# by 10_select_primary.yaml. A second run is allowed only into a separate reproduce dir.
+name: primary
+frozen: experiments/lesion_detection/configs/frozen/primary.yaml
+components_config: experiments/lesion_detection/configs/components.yaml
+test_split: experiments/lesion_detection/configs/splits/clean_ids.txt
+test_label: "clean (29 scans / 28 patients; upper bound on cleanliness)"
+strata:                       # reported alongside, never used for anything else
+  - split: experiments/lesion_detection/configs/splits/contaminated_ids.txt
+    label: "contaminated (55 scans / 49 patients; IN-SAMPLE for selection)"
+baseline:                     # current production: threshold 0.55, no per-lesion filtering
+  connectivity: 26
+  voxel_threshold: 0.55
+  rule: overlap
+  scorer: max_prob            # only used to draw the baseline's own FROC; baseline point uses tau=-inf
+  min_esd_mm: 0.0
+fp_targets: [0.5, 1.0, 2.0, 3.0]
+secondary_rules: [overlap_strict, centroid_3mm, centroid_5mm, centroid_10mm]
+connectivity_sensitivity: 6
+bootstrap: {n_resamples: 2000, seed: 20261004, ci: 0.95}
+fp_characterization:
+  distance_bands_mm: [0, 5, 20, 50, .inf]
+segmentation:
+  enabled: true
+  far_fp_cuts_mm: [10, 20]
+  workers: 6
+results_dir: experiments/lesion_detection/results

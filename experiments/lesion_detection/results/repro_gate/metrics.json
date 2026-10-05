@@ -1,0 +1,41 @@
+{
+  "passed": false,
+  "checks": {
+    "voxel_dice_mean": {
+      "logged": 0.7858,
+      "observed": 0.6093051333217909,
+      "delta": -0.17649486667820913,
+      "tolerance": 0.001,
+      "pass": false
+    },
+    "lesion_sensitivity_mean": {
+      "logged": 0.81,
+      "observed": 0.5629923401780313,
+      "delta": -0.2470076598219687,
+      "tolerance": 0.005,
+      "pass": false
+    },
+    "fp_total": {
+      "logged": 141,
+      "observed": 223,
+      "delta": 82,
+      "tolerance": 2,
+      "pass": false
+    },
+    "lesion_dice_matched_mean": {
+      "logged": 0.791,
+      "observed": 0.7143372788571102,
+      "delta": -0.07666272114288986,
+      "tolerance": 0.005,
+      "pass": false
+    }
+  },
+  "observed": {
+    "voxel_dice_mean": 0.6093051333217909,
+    "lesion_sensitivity_mean": 0.5629923401780313,
+    "fp_per_case_mean": 2.6547619047619047,
+    "fp_total": 223,
+    "lesion_dice_matched_mean": 0.7143372788571102
+  },
+  "n_cases": 84
+}

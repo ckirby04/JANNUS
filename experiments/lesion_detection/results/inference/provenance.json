@@ -1,0 +1,249 @@
+{
+  "command": "run_inference",
+  "timestamp_utc": "2026-10-05T02:32:46+00:00",
+  "jannus_version": "1.50.0",
+  "pipeline_revision": "7base-stackerv2-r1",
+  "git": {
+    "available": true,
+    "commit": "e5460f84c80827d9870057c4a0f56143a27be493",
+    "dirty": true,
+    "base_tag": "v1.50.0",
+    "base_commit": "d43dc9731667909c4e63459317f7d4f4d5ace2e8"
+  },
+  "config_path": "experiments\\lesion_detection\\configs\\inference.yaml",
+  "config_sha256": "0adce4b58aec5d650bb6cfdefa66c45b43d05410366cd8d93fe27a9175829484",
+  "config": {
+    "models_config": "configs/models.yaml",
+    "data": {
+      "images_root": "G:/BrainMetShare/Data/preprocessed_256/train"
+    },
+    "cases": [
+      "experiments/lesion_detection/configs/splits/contaminated_ids.txt",
+      "experiments/lesion_detection/configs/splits/clean_ids.txt"
+    ],
+    "cache_dir": "experiments/lesion_detection/cache/maps",
+    "manifest": "experiments/lesion_detection/results/inference/maps_manifest.jsonl",
+    "provenance": "experiments/lesion_detection/results/inference/provenance.json",
+    "storage": {
+      "stacker_dtype": "float16",
+      "base_dtype": "uint8"
+    },
+    "determinism": {
+      "seed": 42,
+      "strict": false
+    },
+    "device": "cuda"
+  },
+  "checkpoints": {
+    "nnunet_3d": {
+      "path": "nnUNet/nnUNet_results/Dataset001_BrainMets/nnUNetTrainer_expanded2917__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+      "role": "base",
+      "sha256": "d62bce3831778262a841079e74a0c24cb2915154f205379d347fee0b8fbc581d",
+      "matches_weights_lock": true
+    },
+    "nnunet_2d": {
+      "path": "nnUNet/nnUNet_results/Dataset001_BrainMets/nnUNetTrainer_500ep__nnUNetPlans__2d/fold_0/checkpoint_final.pth",
+      "role": "base",
+      "sha256": "c54d77ec78add2102cf79204775c0247d44b20506e6fecb975532fe1b11b5f9d",
+      "matches_weights_lock": true
+    },
+    "nnunet_3d_plans": {
+      "path": "nnUNet/nnUNet_results/Dataset001_BrainMets/nnUNetTrainer_expanded2917__nnUNetPlans__3d_fullres/plans.json",
+      "role": "config",
+      "sha256": "ce27f396bf468e0e3d5855dec73c135d706af87817d5d5c893cd8dc292bea90a",
+      "matches_weights_lock": true
+    },
+    "nnunet_3d_dataset": {
+      "path": "nnUNet/nnUNet_results/Dataset001_BrainMets/nnUNetTrainer_expanded2917__nnUNetPlans__3d_fullres/dataset.json",
+      "role": "config",
+      "sha256": "65d870e06c659618adfc7999205c205ae135feda0a65c983daffaad348307931",
+      "matches_weights_lock": true
+    },
+    "nnunet_2d_plans": {
+      "path": "nnUNet/nnUNet_results/Dataset001_BrainMets/nnUNetTrainer_500ep__nnUNetPlans__2d/plans.json",
+      "role": "config",
+      "sha256": "ce27f396bf468e0e3d5855dec73c135d706af87817d5d5c893cd8dc292bea90a",
+      "matches_weights_lock": true
+    },
+    "nnunet_2d_dataset": {
+      "path": "nnUNet/nnUNet_results/Dataset001_BrainMets/nnUNetTrainer_500ep__nnUNetPlans__2d/dataset.json",
+      "role": "config",
+      "sha256": "52ed3cf99b14bdbc9e91fb1a57d8d65e1ecb568be0c8110b1ae545d3d9acc42f",
+      "matches_weights_lock": true
+    },
+    "patch_8": {
+      "path": "model/patch_8.pth",
+      "role": "base",
+      "sha256": "0c33c2e0da26ed81a1cc53630193a1a63084cc741ce9fd72d0737805067d3228",
+      "matches_weights_lock": true
+    },
+    "patch_12": {
+      "path": "model/patch_12.pth",
+      "role": "base",
+      "sha256": "54fc0aa850e6cadffea335f969dc8c87fd2b7133f712be160e38ce428c52aa37",
+      "matches_weights_lock": true
+    },
+    "patch_24": {
+      "path": "model/patch_24.pth",
+      "role": "base",
+      "sha256": "f64dd6ba7811d775f2ddaba135dc7b78a17e84822a7fe630736fb5827d2378e2",
+      "matches_weights_lock": true
+    },
+    "patch_36": {
+      "path": "model/patch_36.pth",
+      "role": "base",
+      "sha256": "853cd69193980a06eca391554af2ff606329339b5c3479c6f412aabf4683adb1",
+      "matches_weights_lock": true
+    },
+    "swin_unetr": {
+      "path": "model/swin_unetr_brainmets.pth",
+      "role": "base",
+      "sha256": "c88036a2b62dbf855a1ef992368578ac687889578fe403e0161c34173b91c063",
+      "matches_weights_lock": true
+    },
+    "stacker": {
+      "path": "model/stacking_classifier_production.pth",
+      "role": "stacker",
+      "sha256": "8416674cc3b216b1edf27c4244393ee59deebf8c0c9d2498f56c4469b73f9da2",
+      "matches_weights_lock": true
+    }
+  },
+  "splits": [
+    {
+      "name": "contaminated_ids",
+      "file": "G:\\BrainMetShare\\1.50\\experiments\\lesion_detection\\configs\\splits\\contaminated_ids.txt",
+      "file_sha256": "5973517fa6086acfbb5baf0dff894c4f43e06c55c75748d24ae65b5ae9211abc",
+      "n_cases": 55,
+      "case_ids": [
+        "BMS_Mets_039",
+        "BMS_Mets_051",
+        "BMS_Mets_132",
+        "BMS_Mets_170",
+        "BMS_Mets_279",
+        "BMS_Mets_282",
+        "BMS_Mets_290",
+        "BMS_Mets_303",
+        "UCSF_100102A",
+        "UCSF_100108D",
+        "UCSF_100110A",
+        "UCSF_100110B",
+        "UCSF_100116A",
+        "UCSF_100126A",
+        "UCSF_100127B",
+        "UCSF_100132A",
+        "UCSF_100132C",
+        "UCSF_100138B",
+        "UCSF_100147B",
+        "UCSF_100148A",
+        "UCSF_100152B",
+        "UCSF_100154A",
+        "UCSF_100154B",
+        "UCSF_100156A",
+        "UCSF_100163C",
+        "UCSF_100164B",
+        "UCSF_100166A",
+        "UCSF_100168A",
+        "UCSF_100202A",
+        "UCSF_100203A",
+        "UCSF_100210A",
+        "UCSF_100214B",
+        "UCSF_100214D",
+        "UCSF_100216B",
+        "UCSF_100218C",
+        "UCSF_100226B",
+        "UCSF_100230B",
+        "UCSF_100234B",
+        "UCSF_100238A",
+        "UCSF_100238D",
+        "UCSF_100238E",
+        "UCSF_100243A",
+        "UCSF_100247A",
+        "UCSF_100279B",
+        "UCSF_100280B",
+        "UCSF_100285B",
+        "UCSF_100300D",
+        "UCSF_100310A",
+        "UCSF_100318A",
+        "UCSF_100319A",
+        "UCSF_100323B",
+        "UCSF_100356A",
+        "UCSF_100357B",
+        "UCSF_100412A",
+        "UCSF_100414B"
+      ]
+    },
+    {
+      "name": "clean_ids",
+      "file": "G:\\BrainMetShare\\1.50\\experiments\\lesion_detection\\configs\\splits\\clean_ids.txt",
+      "file_sha256": "847dd19afe3e1ea8e9d0b7faef5a8fe42608cd20fa934189fc70eefc86d1ee74",
+      "n_cases": 29,
+      "case_ids": [
+        "BMS_Mets_026",
+        "BMS_Mets_225",
+        "BMS_Mets_238",
+        "BMS_Mets_240",
+        "UCSF_100101A",
+        "UCSF_100199A",
+        "UCSF_100204A",
+        "UCSF_100209A",
+        "UCSF_100209B",
+        "UCSF_100220A",
+        "UCSF_100224A",
+        "UCSF_100244A",
+        "UCSF_100253A",
+        "UCSF_100254A",
+        "UCSF_100268A",
+        "UCSF_100270A",
+        "UCSF_100298A",
+        "UCSF_100306A",
+        "UCSF_100317A",
+        "UCSF_100328A",
+        "UCSF_100332A",
+        "UCSF_100333A",
+        "UCSF_100348A",
+        "UCSF_100359A",
+        "UCSF_100364A",
+        "UCSF_100371A",
+        "UCSF_100395A",
+        "UCSF_100396A",
+        "UCSF_100400A"
+      ]
+    }
+  ],
+  "inputs_sha256": {},
+  "packages": {
+    "torch": "2.10.0+cu128",
+    "numpy": "2.3.4",
+    "scipy": "1.16.3",
+    "monai": "1.5.1",
+    "nibabel": "5.3.3",
+    "SimpleITK": "2.5.3",
+    "scikit-image": "0.25.2",
+    "nnunetv2": "2.6.4"
+  },
+  "hardware": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",
+    "python": "3.13.15",
+    "cpu_count": 20,
+    "torch_cuda_available": true,
+    "cuda_version": "12.8",
+    "gpus": [
+      "NVIDIA GeForce RTX 3070 Ti",
+      "NVIDIA GeForce RTX 5060 Ti"
+    ]
+  },
+  "inference_threshold_in_models_yaml": 0.55,
+  "determinism": {
+    "seed": 42,
+    "python_hash_seed": null,
+    "numpy_seeded": true,
+    "torch_seeded": true,
+    "cuda_seeded": true,
+    "cudnn_deterministic": true,
+    "cudnn_benchmark_disabled": true,
+    "torch_deterministic_algorithms": true,
+    "warnings": []
+  },
+  "cuda_device": "NVIDIA GeForce RTX 3070 Ti"
+}

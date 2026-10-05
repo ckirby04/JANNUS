@@ -150,6 +150,55 @@ Candidates and how they differ (EXPERIMENT_LOG, 2026-10-04 Q5 entry):
 
   `stacking_v5_results_per_case.json` holds the *older* 6-model stacker. No frozen file was opened for this check. **The aggregate check is the one in use.**
 
+## D9 Binarisation and storage. *Locked (Phase 2).*
+
+- **Binarisation.** The experiment uses `prob >= threshold`, the rule `jannus predict` uses to write masks (`cli/commands.py:322`), with no morphology. The reproduction gate alone uses `prob > 0.55`, because that is what `seven_model_stacker.py` used for the published figures. The two differ only for voxels exactly at threshold. The stacker map is stored as float16, so values are quantised and exact ties are possible.
+- **Storage.** The stacker map is float16. Base maps are uint8 (`round(p*255)`, max error 1/510), and only `agreement` and `inv_variance` read them. A base voxel within 1/510 of the 0.5 base threshold could flip one vote. This was accepted for a 7× smaller cache.
+- **Alternative.** Storing float32 everywhere costs about 470 MB per case uncompressed and buys no precision that matters here.
+
+## D10 Score threshold, curve end, and per-bin readout. *Locked (Phase 3).*
+
+- **Fixed-FP readout.** The FROC is a step function over every distinct component score. Sensitivity at an FP target is taken at the most permissive τ with FP/scan ≤ target. There is no interpolation.
+- **Curve ends early.** If even τ = min score stays below the target, the end-of-curve sensitivity is reported and flagged "curve ends below". It is the best this voxel threshold can do within that FP budget, so nothing is extrapolated, and the flag is carried into every table and into CPM.
+- **Per-bin readout.** Per-size-bin sensitivity at an FP target uses the overall τ that meets the target. Choosing τ per bin would assume the system knows each lesion's true size.
+- **FPs in bins.** FPs are never assigned to GT size bins. FP/scan is always global.
+
+## D11 What is frozen, and what the test report shows. *Locked (Phase 4).*
+
+**Frozen on the tuning split:**
+- connectivity, voxel threshold, hit rule, scorer and min ESD;
+- **and** the τ that meets each FP target on the tuning split.
+
+**On test the report shows both:**
+1. The frozen τ applied to test. This is the *deployable operating point*, and its realised FP/scan may differ from the target, which is exactly the miscalibration the owner asked to see.
+2. The sensitivity read off the test FROC at each FP rate. This is a *threshold-free curve summary*, the standard FROC reading.
+
+The second involves no choice made on test, so it is not tuning. Both are labelled.
+
+**Run once.** `evaluate.py` refuses to run if the run's `metrics.json` exists. `--reproduce` writes to a separate directory and compares.
+
+## D12 Optional minimum-size filter. *Locked (Phase 4).*
+
+- **Variant.** Selected separately on the tuning split, over min ESD ∈ {0, 1, 2, 3} mm × the same grid.
+- **Effect on lesions.** A dropped component no longer detects anything. A lesion hit only by dropped components becomes a miss.
+- **Reporting.** Reported as an *effect* (ΔFP/scan vs Δ small-bin recall) next to the unfiltered frozen points. It never replaces the primary choice.
+
+## D13 FP distance. *Locked (Phase 2).*
+
+- **Definition.** "Distance to nearest GT" is the minimum, over an FP component's voxels, of the Euclidean distance (true mm, EDT with per-axis sampling) to the nearest GT voxel. That makes it voxel-to-voxel, not surface-to-surface.
+- **Edge cases.** An FP that touches GT is not an FP under the overlap rule, so overlap-rule FPs have distance > 0. In a scan with no GT the distance is ∞.
+
+## D14 Scan-level rates and grouping. *Locked (Phase 3).*
+
+- **Rates.** "Patient-level" rates in the brief are computed **per scan**: the fraction of scans with ≥1 lesion where ≥1 lesion is flagged, and where all are flagged. Six UCSF patients contribute several scans each, and one scan is the unit a reader sees.
+- **Resampling.** The bootstrap resamples **patients**, with all of their scans together.
+
+## D15 2-fold assignment (SECONDARY). *Locked (Phase 4).*
+
+- **Stratification.** Patients are stratified by two GT-only flags: any lesion with ESD < 5 mm, and ≥2 lesions. They are shuffled with seed 20261004 and dealt alternately to A and B (`tools/make_2fold.py`).
+- **Labels used.** Stratifying reads the GT lesion sizes of all 84 scans, including the clean ones. It uses no predictions or metrics, and it affects only the secondary analysis.
+- **Pooling.** Out-of-fold pooling shifts each fold's scores by that fold's own frozen τ, so one threshold of 0 applies everywhere (`pool_2fold.py`).
+
 ## Observed, not acted on
 
 Indexed in PRIOR_DEFECTS.md.

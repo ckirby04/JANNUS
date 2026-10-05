@@ -1,0 +1,15 @@
+# SECONDARY (D5): patient-grouped 2-fold over all 84. Tune on fold A; evaluated on fold B.
+name: secondary_tuneA
+components_config: experiments/lesion_detection/configs/components.yaml
+tune_split: experiments/lesion_detection/configs/splits/fold_A_ids.txt
+must_be_disjoint_from:
+  - experiments/lesion_detection/configs/splits/fold_B_ids.txt
+grid:
+  connectivity: 26
+  rule: overlap
+  voxel_thresholds: [0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70]
+  scorers: [max_prob, mean_prob, agreement, inv_variance]
+fp_targets: [0.5, 1.0, 2.0, 3.0]
+filtering: {enabled: false}
+frozen_out: experiments/lesion_detection/configs/frozen/secondary_tuneA.yaml
+results_dir: experiments/lesion_detection/results/select_secondary_tuneA

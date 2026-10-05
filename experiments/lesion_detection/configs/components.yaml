@@ -1,0 +1,37 @@
+# Lesion/component tables: cached maps -> per (case, connectivity, voxel threshold, hit rule)
+# lesion and component records, with every scorer. No selection happens here.
+maps_manifest: experiments/lesion_detection/results/inference/maps_manifest.jsonl
+gt_root: G:/BrainMetShare/Data/preprocessed_256/train      # seg.nii.gz = original annotation (D7)
+native_roots:                                               # headers only: true geometry (D4)
+  bms: G:/BrainMetShare/Data/train
+  ucsf: G:/BrainMetShare/Raw Data/UCSF_BrainMetastases/train
+cases:
+  - experiments/lesion_detection/configs/splits/contaminated_ids.txt
+  - experiments/lesion_detection/configs/splits/clean_ids.txt
+binarize: ">="            # prob >= thr, as `jannus predict` writes masks (commands.py:322)
+voxel_thresholds: [0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70]
+connectivity: [26, 6]     # 26 primary (D1); 6 = sensitivity analysis / bridge to prior counts
+scorers:
+  max_prob: {}
+  mean_prob: {}
+  agreement: {base_threshold: 0.5}
+  inv_variance: {}
+rules:                     # D2 primary, D2 strict supplementary, D3 centroid
+  overlap: {rule: overlap, min_overlap_vox: 1, min_overlap_frac: 0.0}
+  overlap_strict: {rule: overlap, min_overlap_vox: 3, min_overlap_frac: 0.10}
+  centroid_3mm: {rule: centroid, max_distance_mm: 3.0}
+  centroid_5mm: {rule: centroid, max_distance_mm: 5.0}
+  centroid_10mm: {rule: centroid, max_distance_mm: 10.0}
+size_bins:                 # ESD, true spacing, half-open [lo, hi)
+  - ["<3", 0.0, 3.0]
+  - ["3-5", 3.0, 5.0]
+  - ["5-10", 5.0, 10.0]
+  - [">10", 10.0, .inf]
+bridge_size_bins:          # prior JANNUS convention: longest bbox axis at assumed 1 mm iso
+  - ["<3", 0.0, 3.0]
+  - ["3-5", 3.0, 5.0]
+  - ["5-10", 5.0, 10.0]
+  - ["10-20", 10.0, 20.0]
+  - [">20", 20.0, .inf]
+workers: 4
+output_dir: experiments/lesion_detection/cache/components
