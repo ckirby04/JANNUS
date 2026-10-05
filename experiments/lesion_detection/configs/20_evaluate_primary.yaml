@@ -4,7 +4,7 @@ name: primary
 frozen: experiments/lesion_detection/configs/frozen/primary.yaml
 components_config: experiments/lesion_detection/configs/components.yaml
 test_split: experiments/lesion_detection/configs/splits/clean_ids.txt
-test_label: "clean (29 scans / 28 patients; upper bound on cleanliness)"
+test_label: "clean (29 scans / 28 patients) -- clean with respect to nnU-Net and stacker training only; NOT clean for the patch models"
 strata:                       # reported alongside, never used for anything else
   - split: experiments/lesion_detection/configs/splits/contaminated_ids.txt
     label: "contaminated (55 scans / 49 patients; IN-SAMPLE for selection)"

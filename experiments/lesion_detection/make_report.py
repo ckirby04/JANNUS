@@ -92,8 +92,8 @@ def main() -> int:
     w("> - The cohort also overlaps training (LEAKAGE_FINDING.md):")
     w(">   - 24 scans are in nnU-Net fold-0 training;")
     w(">   - 33 of its 77 patients have other timepoints in the stacker's training pool.")
-    w(f"> - The **test split here is the {m['split']['label']}**. Even \"clean\" is an upper bound, because "
-      "the patch models' training sets and the provenance of the synthetic BMS cases are unknown.")
+    w(f"> - The **test split here is the {m['split']['label']}**. Recipe recovery in 1.60 found the legacy "
+      "patch models trained on 77 of the 84 eval cases, and the provenance of the synthetic BMS cases is unknown.")
     w(f"> - The operating point was chosen only on the {m['selected_on']['n_scans']} contaminated scans, "
       "then evaluated once here.")
     w("> - Sizes and distances use true voxel spacing recovered from native headers (SPACING_DEFECT.md). "
@@ -256,8 +256,9 @@ def main() -> int:
       "The sub-5 mm results, which matter most clinically, rest on few lesions from few patients, and their "
       "CIs are wide. They are reported, not established.")
     w("- **No untouched test set.** The 84 scans informed the 0.55 threshold and the stacker choice, and they "
-      "overlap base-model and stacker training at scan and patient level. The \"clean\" subset is clean only "
-      "as far as this repo can show (patch-model training data and synthetic-case provenance are unknown).")
+      "overlap base-model and stacker training at scan and patient level. The \"clean\" subset is clean "
+      "with respect to nnU-Net and stacker training only; it is NOT clean for the patch models, which trained "
+      "on 77 of the 84 eval cases (1.60 recipe recovery).")
     w("- **The selection set is leaked.** The operating point was tuned on contaminated scans, where base "
       "models may be over-confident. The full test grid is shown so any miscalibration is visible.")
     w("- **Ground truth is one annotation convention.** The supplementary BraTS comparison shows how much "

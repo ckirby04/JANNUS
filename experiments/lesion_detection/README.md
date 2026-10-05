@@ -52,7 +52,7 @@ selected operating point.
 - **This repo has no untouched test set.** The 84 scans were used to choose the 0.55 threshold and the stacker variant.
 - **Training overlap.** 24 scans are in nnU-Net fold-0 training, and 33 of the 77 patients have other timepoints in the stacker pool.
 - **Primary design.** Select on the 55 contaminated scans, then evaluate once on the 29 clean scans (28 patients).
-- **"Clean" is an upper bound.** The patch models' training sets and the provenance of the synthetic BMS cases are unknown.
+- **"Clean" means clean with respect to nnU-Net and stacker training only; NOT clean for the patch models.** Recipe recovery in 1.60 found the legacy patch models trained on 77 of the 84 eval cases. The provenance of the synthetic BMS cases is still unknown.
 - **Standalone FROC does not establish reader benefit.** A CADe claim needs a reader study.
 
 ## Reproduce from scratch

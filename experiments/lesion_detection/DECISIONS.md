@@ -113,6 +113,13 @@ Splits come from `tools/build_leakage_splits.py`, with details in LEAKAGE_FINDIN
   - The 2-fold over all 84 as primary was the previous plan. Its tuning and evaluation folds both mix leaked and clean scans, so its test numbers inherit the leakage.
   - Clean-only cross-fitting would mean tuning on about 14 scans, which is too few to choose a threshold.
 
+## D5.2 Label for the 29-scan subset; patch-model contamination. *Locked (owner, 2026-10-05).*
+
+- **Required label.** Recipe recovery in the 1.60 workspace found that the legacy patch models had 77 of the 84 eval cases in their training split (LEAKAGE_FINDING.md, Finding 3). Every result on the 29-scan subset must be labelled **"clean with respect to nnU-Net and stacker training only; NOT clean for the patch models"**.
+- **What changes.** The labels in `configs/20_evaluate_primary.yaml`, the report text and the README.
+- **What does not change.** The split files, and the primary design itself.
+- **Consequence the owner may want to weigh.** The PRIMARY test set is not independent of 4 of the 7 base models. A primary/secondary redesign is the owner's call; nothing has been evaluated on the clean set yet.
+
 ## D6 Selection objective. *Locked (Q3).*
 
 - **Objective.** Plain average sensitivity at 0.5, 1, 2 and 3 FP/scan (CPM).

@@ -55,16 +55,36 @@ group by the ID with the letter removed. The original split grouped by full scan
 - **27 eval patients (30 scans) have some timepoint in fold-0 base-model training.** That is Finding 1 widened to the patient level.
 - 11 patients (13 scans) fall under both.
 
+## Finding 3: the legacy patch models trained on 77 of the 84 eval cases
+
+*Reported by the project owner on 2026-10-05, from recipe recovery in the 1.60 workspace. This
+experiment cannot see that workspace and has not verified the finding independently.*
+
+**The legacy patch models (`patch_8/12/24/36`) had 77 of the 84 eval cases in their training split.**
+These are the models whose outputs fill `stacking_cache_v5` and on which the production stacker was
+trained. Consequences:
+
+- At most 7 of the 84 scans are outside patch-model training. Which 7 is not recorded here.
+- At least 22 of the 29 "clean" scans were therefore patch-model training cases.
+- Four of the seven base models feeding the stacker had seen most of the cohort, labels included.
+- The training split of the **v3** patch weights loaded by today's pipeline is not covered by this report.
+
 ## The clean subset, and why it is only an upper bound
+
+> **Required label (owner, 2026-10-05).** Every result on the 29-scan subset must be labelled:
+> **"clean with respect to nnU-Net and stacker training only; NOT clean for the patch models."**
+> The file name `clean_ids.txt` and the short word "clean" are kept for continuity, and always
+> mean this restricted sense.
+
 
 **29 scans / 28 patients** have no timepoint in fold-0 training and none in the stacker
 pool. They are listed in `configs/splits/clean_ids.txt`: 4 BMS and 25 UCSF. The remaining
 **55 scans / 49 patients** are in `contaminated_ids.txt`.
 
-"Clean" means clean *as far as this repo can show*. Two training sources cannot be
-checked from 1.50:
+"Clean" means clean *with respect to nnU-Net and stacker training only*. Two training sources
+could not be checked from 1.50 when this was written:
 
-1. **The patch models** (`patch_8/12/24/36`, LightweightUNet3D v3), trained in 1.30 by `train_native_v3.py`. Their training case list is not in 1.50.
+1. **The patch models** (`patch_8/12/24/36`). The legacy generation, whose outputs the stacker was trained on, is now known to be **contaminated**: 77 of the 84 eval cases were in its training split (Finding 3). For the v3 generation loaded today (trained in 1.30 by `train_native_v3.py`), the training case list is still not in 1.50.
 2. **The synthetic BMS cases in Dataset001**: 1,560 `BMS_CPINTER_*`, 892 `BMS_CPINTRA_*` and 200 `BMS_SYNTH_*`. The names suggest copy-paste and synthesis augmentation built from real BMS patients. If any were built from an eval BMS patient, that patient's lesions were in fold-0 training. This matters most for the 4 "clean" BMS scans.
 
 The project owner will supply what is known about both. Until then, every result on the
