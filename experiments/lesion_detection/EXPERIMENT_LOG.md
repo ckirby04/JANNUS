@@ -98,3 +98,25 @@ threshold 0.55, prior JANNUS metrics). 0.943 is sensitivity for **lesions ≥10 
   | swin_unetr | 3,440 | 0.679 |
 
   `patch_8` and `patch_12` flag one to two orders of magnitude more voxels than the other models, and agree with almost none of them. This is consistent with the regenerated base maps differing from the cache the stacker was trained on (1.30 "cache-build protocol", `model/stacking_cache_v5*`), most visibly for the small-patch models. Whether that is their normal behaviour (and the stacker learned to discount it) cannot be decided without the original cache. Not investigated further, pending the owner.
+
+## 2026-10-04: Reproduction-failure diagnosis (option 1; diagnosis only)
+
+- **Owner exception.** One-time read-only access to `1.40/model/stacking_cache_v5/` and `stacking_cache_v5_256/`.
+  - Used for 5 TUNING cases only: `BMS_Mets_039`, `BMS_Mets_051`, `UCSF_100102A`, `UCSF_100110A`, `UCSF_100319A`. The script enforces that they are tuning cases and not clean ones.
+  - Only exact file paths were tested and opened. No directory was listed.
+  - The `mask` key was never read. No labels were used. Nothing was run on clean cases.
+  - Ten cache files were read; their SHA-256 hashes are in `results/reproduction_diagnosis/provenance.json`.
+- **Scripts.** `tools/diagnose_reproduction.py` and `tools/diagnose_nnunet_cache_variants.py`. They use runtime-only forward pre-hooks and change no pipeline code, config, weight or weights.lock.
+- **Findings** (full write-up: REPRODUCTION_FAILURE.md):
+  - SwinUNETR reproduces its cache exactly (r = 1.000).
+  - nnU-Net 3D/2D reproduce **exactly** the `v5_256` nnU-Net variant, which ran on the resampled 256³ grid and was documented in 2026-04 as calibration-broken. They do **not** reproduce the `v5` "native" variant the stacker was trained on (fresh-vs-cached Dice 0.23–0.95).
+  - The cached patch_8/12 maps behave like the other models. Fresh v3 patch_8/12 flag 3–56× more voxels.
+  - Stacker swap test: restoring cached nnU-Net 3D is the largest single correction in 4/5 cases. Cached nnU-Net + Swin with fresh patches agrees with the all-cached output at 0.97–0.98 in 4/5 cases, and the patch models dominate in 1/5.
+  - No sigmoid/logit mismatch. Stacker windowing matches training. No checkpoint hash changed across weights.lock's git history, and no cache-era hash is recorded anywhere readable.
+- **Ranked hypotheses.**
+  1. nnU-Net input path (confirmed).
+  2. Patch-model generation, v3 vs legacy (strong but circumstantial; protocol not excluded).
+  3. Shared normalisation, sigmoid/logit, stacker config and storage were ruled out or found negligible.
+- **Correction.** SPACING_DEFECT.md said every `preprocessed_256` volume had an identity affine. A survey of all 566 headers shows that holds only for the 105 BMS volumes. The 461 UCSF volumes keep their native affine and zooms on the resized grid. The file and PRIOR_DEFECTS #1 were corrected. The experiment's true-spacing derivation is unaffected.
+- PRIOR_DEFECTS #8 was added (status: under diagnosis).
+- Per the owner's instruction: stopped after the write-up. Option 2 (native inputs) has not been started.

@@ -8,10 +8,17 @@ bridging numbers at the old assumption.
 ## What is wrong
 
 `scripts/preprocessing/preprocess_256.py` resizes every volume to 256×256×256 with
-`scipy.ndimage.zoom`. It does not update the geometry. Every output NIfTI under
-`Data/preprocessed_256/` has an identity affine and a pixdim of 1.0 mm on all three axes.
-The native volumes it was built from are not 256³ at 1 mm. As a result, a voxel in the
-256³ grid has a true physical size that differs per case and per axis:
+`scipy.ndimage.zoom`. It does not update the geometry, and the stale header takes two forms:
+
+- **105 BMS volumes:** an identity affine with 1.0 mm pixdim on all axes.
+- **461 UCSF volumes:** the *native* affine and zooms, copied unchanged onto the resized grid. For example, `UCSF_100102A` claims 1.17 × 1.17 × 1.6 mm; the truth is 1.17 × 1.17 × 0.675 mm.
+
+> *Correction, 2026-10-04.* The first version of this file said every volume had an identity
+> affine. That was verified only on BMS. A survey of all 566 headers, made during the
+> reproduction diagnosis, found the UCSF form. See EXPERIMENT_LOG.md.
+
+Neither header is correct. A voxel in the 256³ grid has a true physical size that differs per case
+and per axis:
 
     true_spacing_256[axis] = native_zoom[axis] × native_shape[axis] / 256
 
@@ -40,8 +47,8 @@ slices, so each 256³ voxel is really 0.9375 × 0.9375 × 0.586 mm ≈ 0.515 mm�
 ## How it was found
 
 The task brief required reading spacing from image headers and never assuming isotropy.
-Checking the headers showed 1.0/1.0/1.0 with identity affines on every preprocessed
-volume, while the native volume for the same case was 256×256×150 at 0.9375 mm. Comparing
+Checking the BMS headers showed 1.0/1.0/1.0 with identity affines, while the native volume
+for the same case was 256×256×150 at 0.9375 mm. The UCSF form was found later (see the correction above). Comparing
 GT physical volumes between the two grids exposed the factor of 2. Surveying every
 native header then confirmed that the effective spacing varies per case (table above).
 
@@ -61,10 +68,10 @@ That includes `jannus.evaluation.metrics` called with `spacing=1.0`, as in
 | Small-lesion sensitivity (<100 voxels, described as "~<5 mm") | Label only | The voxel threshold is consistent, but the "~<5 mm" interpretation is wrong. 100 voxels is ~51 mm³ at the median, ~4.6 mm ESD rather than 5.8 mm. |
 | HD95 (**17.26 mm**), MSD | **Yes** | Surface distances are computed in voxel units labelled as mm. With true spacing the values change, typically downward along the through-plane axis. |
 
-**Not affected:** `jannus evaluate` and `jannus predict` read spacing from the input's own
-header. At an external site with correct headers they are correct. The defect lies only
-in the `preprocessed_256` derived dataset and in research scripts that hard-code
-`spacing=1.0` on it.
+**Not affected at a site with correct headers:** `jannus evaluate` and `jannus predict` read
+spacing from the input's own header. **On `preprocessed_256` they would be wrong too.** BMS
+volumes would read as 1 mm, and UCSF volumes would read their native zooms on a resized grid.
+The research scripts sidestep the header entirely by hard-coding `spacing=1.0`.
 
 ## How this experiment handles it
 
