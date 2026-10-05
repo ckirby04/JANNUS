@@ -1,6 +1,6 @@
 # Reproduction-gate failure: diagnosis
 
-Status: **under diagnosis. No fix is applied on this branch.** Date: 2026-10-04.
+Status: **root cause localised to the base-map path; the stacker is confirmed. No fix is applied on this branch.** The fix will be made on a separate branch once the owner chooses between restore and retrain. Diagnosis 2026-10-04; cached-map check 2026-10-05.
 Scope set by the owner:
 
 - 5 TUNING (contaminated) cases;
@@ -197,9 +197,8 @@ assume probabilities. **No pre/post-sigmoid mismatch was found.**
 
 4. **Sigmoid/logit mismatch. Ruled out.** Every map is in [0, 1], and the stacker consumes probabilities in both eras.
 
-5. **Stacker configuration. No evidence of a change.** Window 32, overlap 0.5 and the feature formula match the training script, and the stacker hash is unchanged since v1.50 was cut.
-   - Not tested: whether `stacking_classifier_production.pth` reproduces the published figures when fed the *cached* maps. That needs labels, so it is outside this diagnosis.
-   - That check is the single test that would confirm hypotheses 1 and 2 together explain the whole gap.
+5. **Stacker configuration or checkpoint. Ruled out by the cached-map check (2026-10-05, below).** Window 32, overlap 0.5 and the feature formula match the training script, and the stacker hash is unchanged since v1.50 was cut.
+   - The production checkpoint fed the cached maps reproduces the published figures exactly. See the cached-map check below.
 
 6. **Storage precision (float16 stacker map, `>` vs `>=`) and header spacing. Negligible or not involved.**
    - The magnitude of the gap is orders above float16 resolution.
@@ -220,3 +219,48 @@ affine and zooms unchanged after the resize; for example, `UCSF_100102A` claims 
 where the truth is 1.17 × 1.17 × 0.675 mm. Both kinds of header are wrong. The true-spacing
 derivation used by this experiment is unaffected. SPACING_DEFECT.md has been corrected, and the
 change is logged.
+
+## Cached-map check (2026-10-05): PASSED
+
+This check was pre-committed in EXPERIMENT_LOG.md and in commit `dbfe176`, before running.
+
+**Setup.**
+- Code: `cached_map_reproduction.py` and `configs/50_cached_map_reproduction.yaml`.
+- The **unchanged** production stacker was fed the cached `stacking_cache_v5` base maps for all 84 scans: nnU-Net 3D/2D "native-preprocessed" and the legacy `patch_8/12/24/36`. Model keys only; `mask` was never read.
+- SwinUNETR was generated fresh, because that cache has no Swin key. Fresh Swin matched cached `v5_256` Swin at r = 1.000 in the diagnosis.
+- Settings and metrics are the original script's: `p > 0.55`, `min_size = 0`, 1 mm spacing, 6-connectivity, IoU ≥ 0.1.
+- Ground truth: `preprocessed_256` `seg.nii.gz`.
+
+| Check (all 84 scans) | Logged | Observed | Δ | Tolerance | Result |
+|---|---|---|---|---|---|
+| mean voxel Dice | 0.7858 | 0.7858 | +0.0000 | ±0.001 | PASS |
+| total FPs | 141 | 141 | 0 | ±2 | PASS |
+| mean lesion sensitivity | 0.810 | 0.8095 | −0.0005 | ±0.005 | PASS |
+| *(info)* matched lesion Dice | 0.791 | 0.7910 | 0.0000 | — | matches |
+| *(info)* total GT lesions | 636 (writeup) | 636 | 0 | — | matches |
+
+**Strata.** These are reported as measured; nothing was chosen from them. The "clean" stratum is
+**clean with respect to nnU-Net and stacker training only; NOT clean for the patch models**: the legacy patch models trained on 77 of the 84 eval cases (owner report, 1.60 recipe
+recovery; LEAKAGE_FINDING.md Finding 3).
+
+| Stratum | Scans | GT lesions | Mean voxel Dice | Mean lesion sensitivity | FPs (per scan) | Matched lesion Dice |
+|---|---|---|---|---|---|---|
+| all 84 | 84 | 636 | 0.7858 | 0.8095 | 141 (1.68) | 0.7910 |
+| clean (clean with respect to nnU-Net and stacker training only; NOT clean for the patch models) | 29 | 146 | 0.8049 | 0.8530 | 36 (1.24) | 0.8047 |
+| contaminated | 55 | 490 | 0.7758 | 0.7866 | 105 (1.91) | 0.7837 |
+
+The clean stratum scores *higher* than the contaminated one. That is the opposite of what leakage
+alone would predict. Case mix differs between the strata (146 vs 490 lesions; 29 vs 55 scans), and
+the clean stratum is itself contaminated for the patch models. **No inference is drawn.** These are
+unadjusted means with no CIs. They are a description of the published system, not an estimate of
+its performance on unseen data.
+
+**What this establishes.**
+1. The production stacker checkpoint, its windowing and its feature construction are correct. Fed the maps it was trained on, it reproduces every logged aggregate to the reported precision.
+2. The whole gate failure (0.786 → 0.609 Dice) is due to the base maps today's pipeline produces. Per the diagnosis, those are the nnU-Net 3D/2D input path (256³ grid, forced 1 mm spacing) and the patch-model generation (v3 vs legacy).
+3. `preprocessed_256` `seg.nii.gz` reproduces the cache-era ground truth closely enough that aggregates match exactly. The cache `mask` was still never read.
+4. The published figures describe a system whose base-model inputs (native-path nnU-Net plus legacy patch models) are **not what v1.50 ships**. They also overlap the evaluation cohort in training (LEAKAGE_FINDING.md).
+
+**Not established.**
+- How the shipped pipeline performs on native-resolution site data (option 2, not started).
+- Which fix is correct: restoring the native nnU-Net path and the legacy patch weights, or retraining the stacker on today's base maps. That is the owner's decision, to be made on a separate branch.

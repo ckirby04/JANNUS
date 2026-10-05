@@ -1,0 +1,56 @@
+{
+  "passed": true,
+  "checks": {
+    "voxel_dice_mean": {
+      "logged": 0.7858,
+      "observed": 0.785826878539573,
+      "delta": 2.6878539572949833e-05,
+      "tolerance": 0.001,
+      "pass": true
+    },
+    "fp_total": {
+      "logged": 141,
+      "observed": 141,
+      "delta": 0,
+      "tolerance": 2,
+      "pass": true
+    },
+    "lesion_sensitivity_mean": {
+      "logged": 0.81,
+      "observed": 0.8095453528065588,
+      "delta": -0.0004546471934412377,
+      "tolerance": 0.005,
+      "pass": true
+    }
+  },
+  "overall": {
+    "n_cases": 84,
+    "voxel_dice_mean": 0.785826878539573,
+    "lesion_sensitivity_mean": 0.8095453528065588,
+    "fp_total": 141,
+    "fp_per_case_mean": 1.6785714285714286,
+    "lesion_dice_matched_mean": 0.7910332216404192,
+    "n_gt_lesions_total": 636
+  },
+  "by_stratum": {
+    "clean": {
+      "n_cases": 29,
+      "voxel_dice_mean": 0.8049024172518111,
+      "lesion_sensitivity_mean": 0.8529681046922426,
+      "fp_total": 36,
+      "fp_per_case_mean": 1.2413793103448276,
+      "lesion_dice_matched_mean": 0.8047434077823742,
+      "n_gt_lesions_total": 146
+    },
+    "contaminated": {
+      "n_cases": 55,
+      "voxel_dice_mean": 0.775768867218575,
+      "lesion_sensitivity_mean": 0.7866497199941075,
+      "fp_total": 105,
+      "fp_per_case_mean": 1.9090909090909092,
+      "lesion_dice_matched_mean": 0.7836703438975178,
+      "n_gt_lesions_total": 490
+    }
+  },
+  "swin_source": "fresh_float32_unchanged_adapter"
+}

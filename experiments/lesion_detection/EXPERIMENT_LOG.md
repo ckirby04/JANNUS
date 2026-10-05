@@ -144,3 +144,22 @@ system. **Nothing about the operating point is chosen from it.**
   1. *SwinUNETR source.* `stacking_cache_v5` has no Swin key; its keys are `mask, nnunet, nnunet_2d, patch_8/12/24/36`. The stacker was trained with Swin from `stacking_cache_v5_256`, which this grant does not cover. Swin is therefore generated fresh, in float32, by the unchanged `SwinUNETRAdapter` on the same `load_case` input. On all 5 diagnosis cases, fresh Swin matched cached `v5_256` Swin at r = 1.000 with max abs diff ≤ 0.005 (REPRODUCTION_FAILURE.md §1). Any residual Swin difference is small and is noted as a possible contributor if the gate misses narrowly.
   2. *Ground truth.* `Data/preprocessed_256/train/<case>/seg.nii.gz`, not the cache's `mask` key, which the original script used and this grant excludes. Q5 established that this file is the original annotation resized to 256³. It is assumed, not verified, to equal the cache `mask`.
 - **Output.** `results/cached_map_reproduction/`: `metrics.json`, `per_case.csv`, `provenance.json` (with the SHA-256 of every cache file read).
+
+## 2026-10-05: Owner report (patch-model training overlap) and cached-map check result
+
+- **Owner report, from 1.60 recipe recovery; not independently verified here.** The legacy patch models had 77 of the 84 eval cases in their training split.
+  - Added to LEAKAGE_FINDING.md (Finding 3), PRIOR_DEFECTS #2 and DECISIONS D5.2. Commit `fed8e12`.
+  - Every 29-scan result is now labelled "clean with respect to nnU-Net and stacker training only; NOT clean for the patch models".
+- **Cached-map check: PASSED.**
+  - It ran exactly as pre-committed (`dbfe176`): split all 84, labels used only for the pre-declared aggregates, nothing selected.
+  - All 84: mean Dice 0.7858 (Δ 0.0000), total FPs 141 (Δ 0), mean sensitivity 0.8095 (Δ −0.0005). Matched lesion Dice 0.7910; GT lesions 636.
+  - Strata, reported only:
+
+    | Stratum | Dice | Sensitivity | FPs |
+    |---|---|---|---|
+    | "clean" (29, nnU-Net/stacker-clean only) | 0.8049 | 0.8530 | 36 |
+    | contaminated (55) | 0.7758 | 0.7866 | 105 |
+
+  - The `stacking_cache_v5` files read (84) have their SHA-256 hashes in `results/cached_map_reproduction/provenance.json`. The `mask` key was never read.
+  - Conclusion: the stacker is confirmed, and the gate failure lies entirely in today's base-map generation (REPRODUCTION_FAILURE.md, PRIOR_DEFECTS #8 updated).
+- Stopped per instruction. Option 2 not started. No pipeline, adapter, models.yaml or weights.lock change.
