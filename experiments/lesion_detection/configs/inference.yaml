@@ -1,0 +1,21 @@
+# Probability-map generation for the detection experiment.
+# Runs the unchanged production pipeline (BrainMetPipeline.from_config, verify=True)
+# and caches the stacker map plus all 7 base-model maps. Tunes nothing.
+models_config: configs/models.yaml          # repo-relative; read-only
+data:
+  # Input volumes are the same 256^3 grids the 84-case figures were computed on.
+  images_root: G:/BrainMetShare/Data/preprocessed_256/train
+cases:
+  # Contaminated (tuning) scans first, so selection can start before the clean set finishes.
+  - experiments/lesion_detection/configs/splits/contaminated_ids.txt
+  - experiments/lesion_detection/configs/splits/clean_ids.txt
+cache_dir: experiments/lesion_detection/cache/maps
+manifest: experiments/lesion_detection/results/inference/maps_manifest.jsonl
+provenance: experiments/lesion_detection/results/inference/provenance.json
+storage:
+  stacker_dtype: float16     # threshold sweeps run on this map; 2^-11 relative resolution
+  base_dtype: uint8          # round(p*255); max abs error 1/510, used only for agreement/variance
+determinism:
+  seed: 42                   # jannus.core.determinism default
+  strict: false              # strict mode can make some GPU ops unrunnable; recorded either way
+device: cuda

@@ -1,0 +1,23 @@
+# Reproduction gate (DECISIONS D8). Re-scores the regenerated stacker maps with the
+# ORIGINAL conventions of scripts/evaluation/seven_model_stacker.py:evaluate():
+#   pred = postprocess_prediction((p > 0.55).astype(float32), 0); metrics with spacing=1.0,
+#   default 6-connectivity, IoU>=0.1 matching. Compares against the logged aggregates.
+# Tunes nothing. If it fails: STOP and report; do not debug against these labels.
+maps_manifest: experiments/lesion_detection/results/inference/maps_manifest.jsonl
+gt_root: G:/BrainMetShare/Data/preprocessed_256/train
+cases: experiments/lesion_detection/configs/splits/eval84_ids.txt
+threshold: 0.55
+comparison: strict_greater      # original script used p > t (jannus predict uses p >= t)
+min_component_size: 0
+logged:                          # docs/research/PRODUCTION.md:27-31, MODEL_CARD.md
+  voxel_dice_mean: 0.7858
+  lesion_sensitivity_mean: 0.810
+  fp_per_case_mean: 1.68
+  fp_total: 141
+  lesion_dice_matched_mean: 0.791
+tolerance:                       # owner decision Q7
+  voxel_dice_mean: 0.001
+  lesion_sensitivity_mean: 0.005
+  fp_total: 2
+  lesion_dice_matched_mean: 0.005
+output_dir: experiments/lesion_detection/results/repro_gate
