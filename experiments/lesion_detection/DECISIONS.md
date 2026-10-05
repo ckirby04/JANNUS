@@ -68,7 +68,7 @@ Edge cases, each pinned by a unit test in `tests/unit/test_detection_matching.py
   - Longest axis, the RANO-style measure used in prior reports. It is kept as a bridging column only. It is orientation-dependent and on these grids badly distorted.
   - Resampling predictions back to the native grid and evaluating there would be most faithful. But it re-interpolates probability maps the stacker never saw, so it is not used.
 
-## D5 Splits and tuning protocol. *Locked: 2-fold fallback. Patient grouping and subset reporting pending (Q8).*
+## D5 Splits and tuning protocol. *Superseded in part by D5.1 (2026-10-04): the 2-fold is now SECONDARY.*
 
 **Contamination check** (required by the Phase 0 approval):
 
@@ -91,13 +91,35 @@ Edge cases, each pinned by a unit test in `tests/unit/test_detection_matching.py
 - **Fold assignment.** Fixed seed, stratified by (any GT lesion with ESD < 5 mm) × (≥2 GT lesions). The aim is balanced small-lesion and multi-lesion content.
 - **Pending (Q8).** Should results also be reported separately for the 29-scan clean subset and the 55 contaminated scans? The proposal is yes, as a stratum, never used for selection.
 
+## D5.1 Primary split: tune on contaminated, test on clean. *Locked (Q8, 2026-10-04).*
+
+Splits come from `tools/build_leakage_splits.py`, with details in LEAKAGE_FINDING.md.
+
+- **PRIMARY (headline).**
+  1. Choose the operating point (voxel threshold × scorer, by CPM per D6) on the **55 contaminated scans (49 patients)** only (`configs/splits/contaminated_ids.txt`).
+  2. Evaluate **once** on the **29 clean scans (28 patients)** (`configs/splits/clean_ids.txt`).
+  3. REPORT.md shows the **full clean-set FROC across every voxel threshold and scorer**, not just the chosen point. A threshold tuned on leaked cases may be miscalibrated for clean data, and the reader must be able to see that.
+- **SECONDARY (sensitivity analysis).** A patient-grouped, fixed-seed 2-fold split over all 84 (D5): tune on A and evaluate on B, then swap, and report both directions plus pooled.
+- **Strata.** Clean and contaminated results are always reported separately. The contaminated-set number at the chosen point is in-sample for selection and is labelled that way.
+- **CIs.** Patient-grouped bootstrap everywhere.
+- **Small n.** Clean-set per-size-bin GT lesion counts appear next to every per-bin number. REPORT.md states plainly that the bins are underpowered.
+- **The baseline** (0.55, no per-lesion filtering) is reported on the same clean set in the same format.
+- **Cleanliness is an upper bound.** Two training sources cannot be checked from 1.50:
+  - the **patch models'** (`patch_8/12/24/36`) training case list;
+  - the **source patients of the synthetic BMS cases** in Dataset001 (1,560 `BMS_CPINTER_*`, 892 `BMS_CPINTRA_*`, 200 `BMS_SYNTH_*`).
+
+  Either could make a "clean" scan contaminated. The 4 clean BMS scans are most exposed to the second. The owner will supply what is known, and this entry will be superseded if that changes the split.
+- **Alternatives considered.**
+  - The 2-fold over all 84 as primary was the previous plan. Its tuning and evaluation folds both mix leaked and clean scans, so its test numbers inherit the leakage.
+  - Clean-only cross-fitting would mean tuning on about 14 scans, which is too few to choose a threshold.
+
 ## D6 Selection objective. *Locked (Q3).*
 
 - **Objective.** Plain average sensitivity at 0.5, 1, 2 and 3 FP/scan (CPM).
 - **Tie-breaks.** First the higher voxel threshold, then the scorer listed first in config order.
 - **Reporting.** Small-lesion results are reported separately and are not used for selection.
 
-## D7 UCSF ground-truth file. *Proposed; awaiting the owner's confirmation (Q5).*
+## D7 UCSF ground-truth file. *Locked (Q5 confirmed 2026-10-04).*
 
 Candidates and how they differ (EXPERIMENT_LOG, 2026-10-04 Q5 entry):
 
@@ -107,11 +129,11 @@ Candidates and how they differ (EXPERIMENT_LOG, 2026-10-04 Q5 entry):
 | B | `Raw Data/.../<id>_seg.nii.gz` | 461/461 | 0/1 | original 2020 release |
 | C | `Raw Data/.../<id>_BraTS-seg.nii.gz` | 324/461 (54/72 eval UCSF scans) | 1 NETC, 2 oedema, 3 enhancing | 2023 neuroradiologist revision; label 3 vs B: median Dice 0.961, lesion count differs in 91/324 scans |
 
-- **Proposal.** Use **A** for every primary number. It is what every prior JANNUS figure used, and it covers every scan.
+- **Decision.** Use the original annotation (A, which is identical to the resized B), with true spacing from the native header (D4), for every primary number. It is what every prior JANNUS figure used, and it covers every scan.
 - **Why C is not the default.** C is a revision, but not a clean drop-in correction. It covers only 75 % of the eval UCSF scans, so the cohort would mix annotation protocols. It uses a different label scheme, and the release notes say label 3 "may be slightly different" from the original label 1.
-- **Supplementary analysis.** Re-score the 54 eval-cohort scans that have C, using C label 3 as GT, at the frozen operating points. Lesion counts differ in about 28 % of scans, which matters more for detection than for Dice. This shows how sensitive the detection numbers are to annotation convention. It is reported as a supplementary analysis and never used for selection.
+- **Supplementary analysis (approved).** Re-score the 54 eval-cohort scans that have C, using C label 3 as GT, at the frozen operating points. Report how many lesions per scan change detection status between the two annotations. C is resized to the 256³ grid with the same nearest-neighbour zoom as `preprocess_256.py`, so both annotations sit on the stacker's grid. Lesion counts differ in about 28 % of scans, which matters more for detection than for Dice. This shows how sensitive the detection numbers are to annotation convention. It is reported as a supplementary analysis and never used for selection.
 
-## D8 Reproduction gate tolerances. *Locked (Q7), with the limitation noted.*
+## D8 Reproduction gate tolerances. *Locked (Q7). Aggregate check in use (2026-10-04).*
 
 - **Target.** Per-case Dice within 1e-3 and the logged aggregates matched.
 - **Limitation.** Under the Q2 exception only **IDs** were copied, so no per-case Dice values are available to compare against. The only logged figures readable in 1.50 are the aggregates in docs: Dice 0.7858, sensitivity 0.810, 1.68 FP/case (= 141 FPs / 84).
@@ -120,8 +142,17 @@ Candidates and how they differ (EXPERIMENT_LOG, 2026-10-04 Q5 entry):
   - total FP count within ±2 of 141;
   - lesion sensitivity within ±0.005 of 0.810.
   - All three are computed exactly as the original script did: `postprocess_prediction(p > 0.55, 0)`, existing metrics, 1 mm spacing.
-- **What a per-case check would need.** Permission to read the per-case production Dice, if it was ever logged. `stacking_v5_results_per_case.json` holds the *older* 6-model stacker's values, not the production one's.
+- **Per-case check: not possible.** The owner granted a read-only exception for a per-case results file for the production 7-model stacker. No such file can exist. Every script that evaluates the production checkpoint writes only aggregates plus `eval_cases`, as the 1.50 copies show:
+  - `seven_model_stacker.py:361-374`
+  - `eval_stratified_by_size.py:84-91`
+  - `eval_measurable_disease.py:261-290`
+  - `eval_size_filtered.py:200-207`
+
+  `stacking_v5_results_per_case.json` holds the *older* 6-model stacker. No frozen file was opened for this check. **The aggregate check is the one in use.**
 
 ## Observed, not acted on
+
+Indexed in PRIOR_DEFECTS.md.
+
 
 `jannus.evaluation.metrics.compute_case_stratified` compares unmatched predictions against `label`, the imported scipy function, instead of `bin_label`. As a result **`n_fp_in_bin` is always 0**, and every prior "FPs/case" column in the stratified-by-size tables reads 0. The bug is not fixed on this branch (existing metrics are frozen). It should be fixed separately.

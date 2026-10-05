@@ -1,0 +1,22 @@
+# Defects in existing code and published numbers
+
+This is an index of every defect in pre-existing JANNUS code, data or figures found
+during the lesion-detection experiment. **None is fixed on this branch.** Existing code,
+metrics and docs are frozen here by the task brief. Each entry points to its detailed
+write-up where one exists.
+
+| # | Defect | Location | Affected outputs | Detail |
+|---|---|---|---|---|
+| 1 | **`preprocessed_256` misstates voxel spacing.** Volumes are resized to 256³ with `scipy.ndimage.zoom`, but written with an identity affine and 1 mm pixdim. True spacing varies per case and axis: median voxel volume 0.515 mm³, through-plane 0.54–1.21 mm. Example: BMS_Mets_005 GT is 820.9 mm³ native but reads as 1640.0 mm³ (2.0×). | `scripts/preprocessing/preprocess_256.py:41-43` (zoom, no affine update); `src/jannus/evaluation/metrics.py:17` (docstring asserts 1 mm is "true for the 84 held-out eval cases"); `spacing=1.0` hard-coded in `scripts/evaluation/seven_model_stacker.py:320-321`, `eval_stratified_by_size.py:70-71`, `eval_measurable_disease.py:199`, `eval_size_filtered.py:153`, `full_stacking_comparison_v2.py:349-350` | Size-stratified sensitivity (incl. <3 mm 0.061); measurable-disease (≥10 mm lesions only) scope: sensitivity 0.943, matched Dice 0.835, κ 0.867; SoLD error; HD95 17.26 mm and MSD; the "~<5 mm" label on small-lesion sensitivity | [SPACING_DEFECT.md](SPACING_DEFECT.md) |
+| 2 | **The 84-case "held-out" cohort overlaps training.** 24 scans are in nnU-Net fold-0 training (the fold behind nnU-Net 3D/2D and SwinUNETR). 33 of the 77 patients have other timepoints in the stacker's training pool, because UCSF timepoint suffixes were not grouped. Only 29 scans / 28 patients are clean, as an upper bound. | `docs/MODEL_CARD.md:70` ("disjoint from training at the patient level"); `docs/INTENDED_USE.md:101,133`; split built by `scripts/evaluation/seven_model_stacker.py:199-200` (filters by scan ID, not patient) | Every published performance figure: Dice 0.7858; sensitivity 0.810 at 1.68 FP/case; ≥10 mm-only figures; stratified sensitivities; HD95/MSD | [LEAKAGE_FINDING.md](LEAKAGE_FINDING.md) |
+| 3 | **The threshold and the stacker variant were selected on the reporting cohort.** 0.55 is the Dice-optimal value from a sweep over the same 84 scans that the published figures are computed on. The stacker variant was also chosen by comparison on them. | `scripts/evaluation/seven_model_stacker.py:298-304` (sweep in `evaluate()`); `docs/research/stacking_v4_vs_v5_writeup.md:29` | Every figure at threshold 0.55 on the 84 is an in-sample estimate | LEAKAGE_FINDING.md, "Which prior metrics are affected" |
+| 4 | **Per-size-bin FP count is always zero.** `compute_case_stratified` compares each unmatched prediction's bin to `label` (the `scipy.ndimage.label` function imported at the top of the module) instead of `bin_label`. A string never equals a function, so `n_fp_in_bin` is always 0. | `src/jannus/evaluation/metrics.py:425` | `n_fp_in_bin` / `n_fp_total` / `fp_per_case` columns of every stratified-by-size table: `aggregate_stratified`, `format_stratified_report`, `CohortResult.stratified` in `jannus evaluate` → `results.json` and `report.md` | This file |
+| 5 | **The cohort's composition is misdescribed.** INTENDED_USE says all 84 are "from UCSF Brain Metastases"; 12 are Stanford BrainMetShare (`BMS_Mets_*`). | `docs/INTENDED_USE.md:101` | Cohort description in a regulatory-facing doc | LEAKAGE_FINDING.md |
+| 6 | **The connectivity convention is not stated.** Existing lesion matching uses `scipy.ndimage.label` with its default 6-connectivity, and no report or doc says so. Lesion and FP counts depend on it. | `src/jannus/evaluation/metrics.py:44-45`; `src/jannus/evaluation/harness.py:76` | Lesion counts, sensitivity and FP/case across all reports. Not wrong in itself, but undocumented and not comparable with 26-connected counts. | DECISIONS.md D1 |
+
+Recommended follow-ups for the owner, outside this branch:
+
+- Fix #1 and #4 in code, with tests.
+- Rebuild the 84-case split grouped by patient, and decide whether to retire or re-describe the cohort.
+- Correct MODEL_CARD.md:70 and INTENDED_USE.md:101/133.
+- Re-issue the affected figures, labelled as superseding the old ones.

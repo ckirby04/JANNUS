@@ -21,3 +21,18 @@ paths above were opened; no frozen directory was listed or searched.
 
 The equivalent paths under `1.30` and `1.1` were tested for existence only (`test -f`),
 and do not exist.
+
+## Derived files (generated in this repo, no frozen-folder reads)
+
+`eval84_leakage.csv`, `clean_ids.txt` (29 scans / 28 patients) and `contaminated_ids.txt`
+(55 scans / 49 patients) are written by `tools/build_leakage_splits.py`. It uses only
+`eval84_ids.txt`, `nnunet_splits_final_ids.json` and the directory listing of
+`Data/preprocessed_256/train`.
+
+## Q7 per-case exception: not used (2026-10-04)
+
+A one-time exception was granted to copy case IDs and per-case Dice from a per-case
+results file for the production 7-model stacker, if one exists. None can exist. Every
+script that evaluates the production checkpoint writes only aggregates and `eval_cases`
+(see DECISIONS.md D8). No frozen file was opened, and the aggregate reproduction check
+is used instead.

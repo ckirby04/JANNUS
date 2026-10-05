@@ -48,3 +48,13 @@ threshold 0.55, prior JANNUS metrics). 0.943 is sensitivity for **lesions ≥10 
   - Dice of B vs all C labels: median 0.454. Including oedema is not comparable.
   - Lesion count (26-connectivity, native grid) differs in 91/324 scans: 3,278 lesions in B vs 3,350 in C label 3.
 - Decision pending the owner (DECISIONS D7).
+
+## 2026-10-04: Owner decisions on Q5, Q7 and Q8; Phase 1 committed
+
+- Phase 1 committed as `9fee455` on `exp/lesion-detection-eval`.
+- **Q5.** The original `<id>_seg.nii.gz` with corrected spacing is used for every main number. The BraTS-revision side analysis on 54 eval scans is approved (D7).
+- **Q8.** Split design changed (D5.1). PRIMARY: tune on the 55 contaminated scans, evaluate once on the 29 clean scans. SECONDARY: the patient-grouped 2-fold over all 84.
+  - Split: 84-case cohort, using ID arithmetic only. `tools/build_leakage_splits.py` wrote `clean_ids.txt` (29 scans / 28 patients) and `contaminated_ids.txt` (55 / 49). No patient appears on both sides.
+  - The two sources that cannot be checked (patch-model training sets and synthetic BMS provenance) are recorded in D5.1. The owner will supply what is known.
+- **Q7.** No per-case production-stacker file can exist; the scripts write aggregates only. The aggregate gate is in use (D8). No frozen file was opened.
+- Wrote LEAKAGE_FINDING.md and PRIOR_DEFECTS.md (an index of 6 defects in existing code, data and docs). No existing doc was edited.
