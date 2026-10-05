@@ -120,3 +120,27 @@ threshold 0.55, prior JANNUS metrics). 0.943 is sensitivity for **lesions ≥10 
 - **Correction.** SPACING_DEFECT.md said every `preprocessed_256` volume had an identity affine. A survey of all 566 headers shows that holds only for the 105 BMS volumes. The 461 UCSF volumes keep their native affine and zooms on the resized grid. The file and PRIOR_DEFECTS #1 were corrected. The experiment's true-spacing derivation is unaffected.
 - PRIOR_DEFECTS #8 was added (status: under diagnosis).
 - Per the owner's instruction: stopped after the write-up. Option 2 (native inputs) has not been started.
+
+## 2026-10-05: PRE-COMMITMENT for the label-based cached-map check (written and committed before running)
+
+Purpose: measure whether the unchanged production stacker reproduces the published 84-case
+figures when fed the base maps it was trained on. This is a measurement of the published
+system. **Nothing about the operating point is chosen from it.**
+
+- **Owner grant.** Read-only access to `G:\BrainMetShare\1.40\model\stacking_cache_v5\` for all 84 eval cases, for this one run. Model keys only: `nnunet`, `nnunet_2d`, `patch_8`, `patch_12`, `patch_24`, `patch_36`. The `mask` key is never read.
+- **Frozen code.** `experiments/lesion_detection/cached_map_reproduction.py` and `configs/50_cached_map_reproduction.yaml`, as committed together with this entry. The production stacker checkpoint, the adapters, models.yaml and weights.lock are unchanged.
+- **Settings.** Those of the original `seven_model_stacker.py:evaluate()`:
+  - stacker sliding window 32³, overlap 0.5, 9-channel features;
+  - `postprocess_prediction((p > 0.55).astype(float32), 0)`;
+  - that script's `voxel_dice`;
+  - existing `compute_case_metrics(spacing=1.0)`, which uses scipy's default 6-connectivity and IoU ≥ 0.1 greedy matching.
+- **Gate**, judged on all 84 scans together:
+  - mean voxel Dice within ±1e-3 of 0.7858;
+  - total FPs within ±2 of 141;
+  - mean lesion sensitivity within ±0.005 of 0.810.
+- **Strata.** The same metrics are reported separately for clean (29) and contaminated (55). They are reported only, never used to decide anything.
+- **Outcome rule.** The result is reported as-is. If it misses: stop and report. No debugging against labels, and none against clean cases under any circumstances.
+- **Two departures from the literal instruction, decided now, before any result exists:**
+  1. *SwinUNETR source.* `stacking_cache_v5` has no Swin key; its keys are `mask, nnunet, nnunet_2d, patch_8/12/24/36`. The stacker was trained with Swin from `stacking_cache_v5_256`, which this grant does not cover. Swin is therefore generated fresh, in float32, by the unchanged `SwinUNETRAdapter` on the same `load_case` input. On all 5 diagnosis cases, fresh Swin matched cached `v5_256` Swin at r = 1.000 with max abs diff ≤ 0.005 (REPRODUCTION_FAILURE.md §1). Any residual Swin difference is small and is noted as a possible contributor if the gate misses narrowly.
+  2. *Ground truth.* `Data/preprocessed_256/train/<case>/seg.nii.gz`, not the cache's `mask` key, which the original script used and this grant excludes. Q5 established that this file is the original annotation resized to 256³. It is assumed, not verified, to equal the cache `mask`.
+- **Output.** `results/cached_map_reproduction/`: `metrics.json`, `per_case.csv`, `provenance.json` (with the SHA-256 of every cache file read).

@@ -1,0 +1,22 @@
+# Label-based cached-map check (pre-committed 2026-10-05; see EXPERIMENT_LOG.md).
+# Unchanged production stacker on the cached stacking_cache_v5 base maps (native-preprocessed
+# nnU-Net 3D/2D + legacy patch_8/12/24/36). SwinUNETR is generated fresh, because stacking_cache_v5
+# has no Swin key; fresh Swin matched cached v5_256 Swin at r=1.000 on 5/5 diagnosis cases.
+# Original-script settings: p > 0.55, postprocess_prediction(min_size=0), spacing=1.0,
+# 6-connectivity (existing metrics), IoU>=0.1 matching.
+cache_v5: G:/BrainMetShare/1.40/model/stacking_cache_v5
+cache_keys: {nnunet_3d: nnunet, nnunet_2d: nnunet_2d, patch_8: patch_8, patch_12: patch_12,
+             patch_24: patch_24, patch_36: patch_36}
+forbidden_keys: [mask]
+swin_source: fresh_float32_unchanged_adapter
+gt_root: G:/BrainMetShare/Data/preprocessed_256/train      # seg.nii.gz; cache 'mask' is never read
+cases: experiments/lesion_detection/configs/splits/eval84_ids.txt
+strata:
+  clean: experiments/lesion_detection/configs/splits/clean_ids.txt
+  contaminated: experiments/lesion_detection/configs/splits/contaminated_ids.txt
+threshold: 0.55
+comparison: strict_greater
+min_component_size: 0
+logged: {voxel_dice_mean: 0.7858, fp_total: 141, lesion_sensitivity_mean: 0.810}
+tolerance: {voxel_dice_mean: 0.001, fp_total: 2, lesion_sensitivity_mean: 0.005}
+output_dir: experiments/lesion_detection/results/cached_map_reproduction
