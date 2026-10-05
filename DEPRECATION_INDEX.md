@@ -31,6 +31,11 @@ predicate-competitiveness without a listed number (added by hand, marked `(manua
 
 **Not bannered** (incidental hits only, no performance figures): `CONTRIBUTING.md`, `docs/research/dead_configs/README.md`.
 
+> **Update v1.50.2 (2026-10-05).** The runtime figures are removed. That covers the
+> `REFERENCE_INTERNAL` entries in `src/jannus/evaluation/report.py` (lines 15–25 and 76 below), the
+> demo UI strings (`demo/app.py:2889, 2895, 3071`, listed under RUNTIME-UNMARKED) and the demo's
+> `val_dice`/console figures (786, 791). The rows below record v1.50.0 as it was. See CHANGELOG [1.50.2].
+
 ## CLAIM (184)
 
 | file:line | defects | text (original) |

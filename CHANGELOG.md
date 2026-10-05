@@ -14,6 +14,32 @@ reported metric is treated as breaking regardless of its size.
 
 ---
 
+## [1.50.2] — 2026-10-05
+
+Display and report text only. No change to the pipeline, the models, the weights, the operating
+point or any metric computation.
+
+- **`jannus evaluate` report.md and terminal summary.** The published 1.50 figures are no longer shown
+  as the "internal reference" (`src/jannus/evaluation/report.py`). That covers voxel Dice 0.7858,
+  lesion sensitivity 0.810, FP/case 1.68, the ≥10 mm-only sensitivity 0.943 and matched Dice
+  0.835, and HD95 17.26. They are replaced by a single line: "No validated reference performance
+  exists for JANNUS 1.50; see audit/1.50-defects." The "this cohort differs by … voxel Dice" comparison
+  is removed with them. Every generated report.md now opens with the deprecation banner. The
+  Neosoma predicate column, which shows that device's own published figures, is unchanged.
+- **Demo UI (`demo/app.py`).** All displayed performance figures were removed and replaced by the
+  deprecation notice: the header badges, the footer, the per-report footer ("Validation Dice"),
+  the console start-up lines, and the exported `model_info.validation_dice`, which is now `null` with
+  a `performance_note`.
+  - Correction: the demo's "**Sens 94.3%**" badge and footer, shown next to "7-Model Stacking V2
+    (78.6% Dice)", presented the **≥10 mm (RANO-BM measurable-disease) sensitivity** as if it
+    were overall sensitivity. The published overall lesion sensitivity was 0.810. Both figures
+    are withdrawn (tag `audit/1.50-defects`).
+- **Tests.** `tests/unit/test_stale_reference_figures.py` checks that the generated report.md and
+  the summary contain no published 1.50 figure and do contain the banner, and greps
+  `demo/app.py` for the removed figures.
+- This resolves the two follow-ups listed under 1.50.1 and as RUNTIME-UNMARKED in
+  `DEPRECATION_INDEX.md`.
+
 ## [1.50.1] — 2026-10-05
 
 Deprecation notices only; no functional change.
